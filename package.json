@@ -5,7 +5,8 @@
   "scripts": {
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "prisma:seed": "ts-node --project tsconfig.scripts.json prisma/seed.ts"
   },
   "private": true,
   "dependencies": {
