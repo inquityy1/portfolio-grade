@@ -36,6 +36,7 @@ model User {
   id            String         @id @default(cuid())
   email         String         @unique
   password      String
+  name          String?
   memberships   Membership[]
   organizations Organization[] @relation("OrgUsers")
   posts         Post[]

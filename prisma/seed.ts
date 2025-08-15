@@ -1,4 +1,6 @@
 import { PrismaClient, Role } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -12,23 +14,20 @@ async function main() {
     ]);
 
     // Users
-    const [adminA, editorA, viewerA] = await Promise.all([
-        prisma.user.upsert({
-            where: { email: 'adminA@example.com' },
-            update: {},
-            create: { email: 'adminA@example.com', password: 'hashed' }
-        }),
-        prisma.user.upsert({
-            where: { email: 'editorA@example.com' },
-            update: {},
-            create: { email: 'editorA@example.com', password: 'hashed' }
-        }),
-        prisma.user.upsert({
-            where: { email: 'viewerA@example.com' },
-            update: {},
-            create: { email: 'viewerA@example.com', password: 'hashed' }
-        }),
-    ]);
+    async function ensureUser(email: string, name: string, rawPw: string) {
+        const hashed = await bcrypt.hash(rawPw, 10);
+        const user = await prisma.user.upsert({
+            where: { email },                 // unique
+            update: { name, password: hashed }, // <-- force update of name + password
+            create: { email, name, password: hashed },
+        });
+        console.log('✔ user', user.email, '→ name:', user.name);
+        return user;
+    }
+
+    const adminA = await ensureUser('adminA@example.com', 'Admin A', 'admin123');
+    const editorA = await ensureUser('editorA@example.com', 'Editor A', 'editor123');
+    const viewerA = await ensureUser('viewerA@example.com', 'Viewer A', 'viewer123');
 
     // Memberships (RBAC)
     await Promise.all([
