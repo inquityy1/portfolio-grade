@@ -1,16 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma.service';
 
 @Injectable()
 export class UsersService {
-    constructor(private prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) { }
 
-    findAll() {
-        return this.prisma.user.findMany();
+    findAllByOrg(orgId: string) {
+        return this.prisma.user.findMany({
+            where: { memberships: { some: { organizationId: orgId } } },
+            select: { id: true, email: true, name: true, createdAt: true },
+            orderBy: { createdAt: 'desc' },
+        });
     }
 
-    findOne(id: string) {
-        return this.prisma.user.findUnique({ where: { id } });
+    async findOneInOrg(userId: string, orgId: string) {
+        const user = await this.prisma.user.findFirst({
+            where: {
+                id: userId,
+                memberships: { some: { organizationId: orgId } },
+            },
+            select: { id: true, email: true, name: true, createdAt: true },
+        });
+
+        if (!user) throw new NotFoundException('User not found in this organization');
+
+        return user;
     }
 
     findByEmail(email: string) {

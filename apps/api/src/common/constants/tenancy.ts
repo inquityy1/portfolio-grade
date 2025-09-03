@@ -1,0 +1,1 @@
+export const TENANT_HEADER = (process.env.TENANT_HEADER || 'X-Org-Id').toLowerCase();
