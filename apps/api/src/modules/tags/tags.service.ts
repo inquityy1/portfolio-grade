@@ -13,29 +13,25 @@ export class TagsService {
         });
     }
 
-    async create(orgId: string, name: string) {
+    async create(orgId: string, userId: string, name: string) {
         try {
-            return await this.prisma.tag.create({
-                data: { organizationId: orgId, name },
-                select: { id: true, name: true },
-            });
-        } catch (e: any) {
-            // unique(organizationId, name)
-            if (e.code === 'P2002') throw new ConflictException('Tag name already exists in this org');
-            throw e;
-        }
-    }
+            return await this.prisma.$transaction(async (tx) => {
+                const created = await tx.tag.create({
+                    data: { organizationId: orgId, name },
+                    select: { id: true, name: true },
+                });
 
-    async update(orgId: string, id: string, data: { name?: string }) {
-        // ensure tag belongs to this org
-        const exists = await this.prisma.tag.findFirst({ where: { id, organizationId: orgId }, select: { id: true } });
-        if (!exists) throw new NotFoundException('Tag not found');
+                await tx.auditLog.create({
+                    data: {
+                        organizationId: orgId,
+                        userId,
+                        action: 'TAG_CREATED',
+                        resource: 'Tag',
+                        resourceId: created.id,
+                    },
+                });
 
-        try {
-            return await this.prisma.tag.update({
-                where: { id },
-                data,
-                select: { id: true, name: true },
+                return created;
             });
         } catch (e: any) {
             if (e.code === 'P2002') throw new ConflictException('Tag name already exists in this org');
@@ -43,12 +39,60 @@ export class TagsService {
         }
     }
 
-    async remove(orgId: string, id: string) {
-        // ensure tag belongs to this org
-        const exists = await this.prisma.tag.findFirst({ where: { id, organizationId: orgId }, select: { id: true } });
+    async update(orgId: string, userId: string, id: string, data: { name?: string }) {
+        const exists = await this.prisma.tag.findFirst({
+            where: { id, organizationId: orgId },
+            select: { id: true },
+        });
         if (!exists) throw new NotFoundException('Tag not found');
 
-        await this.prisma.tag.delete({ where: { id } });
+        try {
+            return await this.prisma.$transaction(async (tx) => {
+                const updated = await tx.tag.update({
+                    where: { id },
+                    data,
+                    select: { id: true, name: true },
+                });
+
+                await tx.auditLog.create({
+                    data: {
+                        organizationId: orgId,
+                        userId,
+                        action: 'TAG_UPDATED',
+                        resource: 'Tag',
+                        resourceId: id,
+                    },
+                });
+
+                return updated;
+            });
+        } catch (e: any) {
+            if (e.code === 'P2002') throw new ConflictException('Tag name already exists in this org');
+            throw e;
+        }
+    }
+
+    async remove(orgId: string, userId: string, id: string) {
+        const exists = await this.prisma.tag.findFirst({
+            where: { id, organizationId: orgId },
+            select: { id: true },
+        });
+        if (!exists) throw new NotFoundException('Tag not found');
+
+        await this.prisma.$transaction(async (tx) => {
+            await tx.tag.delete({ where: { id } });
+
+            await tx.auditLog.create({
+                data: {
+                    organizationId: orgId,
+                    userId,
+                    action: 'TAG_DELETED',
+                    resource: 'Tag',
+                    resourceId: id,
+                },
+            });
+        });
+
         return { ok: true };
     }
 }

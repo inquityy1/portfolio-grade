@@ -28,6 +28,7 @@ export class PostsService {
         return post;
     }
 
+    // CRUD Posts
     async create(orgId: string, authorId: string, data: { title: string; content: string; tagIds?: string[] }) {
         const tagIds = data.tagIds ?? [];
         if (tagIds.length) {
@@ -36,7 +37,7 @@ export class PostsService {
         }
 
         return this.prisma.$transaction(async (tx) => {
-            const created = await tx.post.create({
+            const post = await tx.post.create({
                 data: {
                     organizationId: orgId,
                     authorId,
@@ -48,7 +49,18 @@ export class PostsService {
                 },
                 include: { postTags: { include: { tag: true } }, revisions: true },
             });
-            return created;
+
+            await tx.auditLog.create({
+                data: {
+                    organizationId: orgId,
+                    userId: authorId,
+                    action: 'POST_CREATED',
+                    resource: 'Post',
+                    resourceId: post.id,
+                },
+            });
+
+            return post;
         });
     }
 
@@ -60,7 +72,7 @@ export class PostsService {
     ) {
         const tagIds = dto.tagIds ?? [];
 
-        const updated = await this.prisma.$transaction(async (tx) => {
+        return await this.prisma.$transaction(async (tx) => {
             const [existing, membership] = await Promise.all([
                 tx.post.findFirst({
                     where: { id, organizationId: orgId },
@@ -104,6 +116,16 @@ export class PostsService {
                 await tx.revision.create({ data: { postId: id, version: fresh!.version, content: dto.content } });
             }
 
+            await tx.auditLog.create({
+                data: {
+                    organizationId: orgId,
+                    userId,
+                    action: 'POST_UPDATED',
+                    resource: 'Post',
+                    resourceId: id,
+                },
+            });
+
             return tx.post.findFirst({
                 where: { id, organizationId: orgId },
                 include: {
@@ -112,8 +134,6 @@ export class PostsService {
                 },
             });
         });
-
-        return updated;
     }
 
     async remove(orgId: string, id: string, userId: string) {
@@ -136,10 +156,22 @@ export class PostsService {
             }
 
             await tx.post.delete({ where: { id } });
+
+            await tx.auditLog.create({
+                data: {
+                    organizationId: orgId,
+                    userId,
+                    action: 'POST_DELETED',
+                    resource: 'Post',
+                    resourceId: id,
+                },
+            });
+
             return { ok: true };
         });
     }
 
+    // Revisions
     async listRevisions(orgId: string, postId: string) {
         const post = await this.prisma.post.findFirst({
             where: { id: postId, organizationId: orgId },
