@@ -29,7 +29,6 @@ export class PostsService {
     }
 
     async create(orgId: string, authorId: string, data: { title: string; content: string; tagIds?: string[] }) {
-        // ensure tags belong to this org (if provided)
         const tagIds = data.tagIds ?? [];
         if (tagIds.length) {
             const count = await this.prisma.tag.count({ where: { id: { in: tagIds }, organizationId: orgId } });
@@ -62,7 +61,6 @@ export class PostsService {
         const tagIds = dto.tagIds ?? [];
 
         const updated = await this.prisma.$transaction(async (tx) => {
-            // fetch post + membership (role) in parallel
             const [existing, membership] = await Promise.all([
                 tx.post.findFirst({
                     where: { id, organizationId: orgId },
@@ -83,7 +81,6 @@ export class PostsService {
                 throw new ForbiddenException('Only the author or an OrgAdmin can edit this post');
             }
 
-            // optimistic update (version match)
             const updated = await tx.post.updateMany({
                 where: { id, organizationId: orgId, version: dto.version },
                 data: {
@@ -94,7 +91,6 @@ export class PostsService {
             });
             if (updated.count === 0) throw new ConflictException('Version conflict — please refresh and retry');
 
-            // optional tag replace
             if (tagIds.length) {
                 const count = await tx.tag.count({ where: { id: { in: tagIds }, organizationId: orgId } });
                 if (count !== tagIds.length) throw new ForbiddenException('One or more tags do not belong to this organization');
@@ -103,7 +99,6 @@ export class PostsService {
                 await tx.postTag.createMany({ data: tagIds.map((tagId) => ({ postId: id, tagId })) });
             }
 
-            // add new revision if content changed
             if (dto.content) {
                 const fresh = await tx.post.findUnique({ where: { id }, select: { version: true } });
                 await tx.revision.create({ data: { postId: id, version: fresh!.version, content: dto.content } });
@@ -142,6 +137,86 @@ export class PostsService {
 
             await tx.post.delete({ where: { id } });
             return { ok: true };
+        });
+    }
+
+    async listRevisions(orgId: string, postId: string) {
+        const post = await this.prisma.post.findFirst({
+            where: { id: postId, organizationId: orgId },
+            select: { id: true },
+        });
+        if (!post) throw new NotFoundException('Post not found');
+
+        return this.prisma.revision.findMany({
+            where: { postId },
+            orderBy: { version: 'desc' },
+            select: { version: true, createdAt: true },
+        });
+    }
+
+    async getRevision(orgId: string, postId: string, version: number) {
+        const post = await this.prisma.post.findFirst({
+            where: { id: postId, organizationId: orgId },
+            select: { id: true },
+        });
+        if (!post) throw new NotFoundException('Post not found');
+
+        const rev = await this.prisma.revision.findUnique({
+            where: { postId_version: { postId, version } },
+            select: { postId: true, version: true, content: true, createdAt: true },
+        });
+        if (!rev) throw new NotFoundException('Revision not found');
+
+        return rev;
+    }
+
+    async rollbackToRevision(orgId: string, postId: string, userId: string, version: number) {
+        return this.prisma.$transaction(async (tx) => {
+            const [post, membership, rev] = await Promise.all([
+                tx.post.findFirst({
+                    where: { id: postId, organizationId: orgId },
+                    select: { id: true, authorId: true, version: true },
+                }),
+                tx.membership.findUnique({
+                    where: { organizationId_userId: { organizationId: orgId, userId } },
+                    select: { role: true },
+                }),
+                tx.revision.findUnique({
+                    where: { postId_version: { postId, version } },
+                    select: { version: true, content: true },
+                }),
+            ]);
+
+            if (!post) throw new NotFoundException('Post not found');
+            if (!membership) throw new ForbiddenException('No membership for this organization');
+            if (!rev) throw new NotFoundException('Revision not found');
+
+            const isAdmin = membership.role === 'OrgAdmin';
+            const isEditor = membership.role === 'Editor';
+            const isAuthor = post.authorId === userId;
+
+            if (!(isAdmin || isEditor || isAuthor)) {
+                throw new ForbiddenException('Only author, Editor, or OrgAdmin can rollback this post');
+            }
+
+            const nextVersion = post.version + 1;
+
+            await tx.post.update({
+                where: { id: postId },
+                data: { content: rev.content, version: nextVersion },
+            });
+
+            await tx.revision.create({
+                data: { postId, version: nextVersion, content: rev.content },
+            });
+
+            return tx.post.findFirst({
+                where: { id: postId },
+                include: {
+                    postTags: { include: { tag: true } },
+                    revisions: { orderBy: { version: 'desc' }, take: 1 },
+                },
+            });
         });
     }
 }

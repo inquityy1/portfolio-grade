@@ -27,7 +27,7 @@ export class PostsController {
         return this.posts.getOne(orgId, id);
     }
 
-    // Create / update / delete -> Editor or OrgAdmin
+    // Create / update / delete
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
     @HttpPost()
     create(@OrgId() orgId: string, @Req() req: any, @Body() dto: CreatePostDto) {
@@ -47,5 +47,30 @@ export class PostsController {
     remove(@OrgId() orgId: string, @Param('id') id: string, @Req() req: any,) {
         const userId = req.user.userId;
         return this.posts.remove(orgId, id, userId);
+    }
+
+    // Revisions
+    @Roles('Viewer' as Role)
+    @Get(':id/revisions')
+    listRevisions(@OrgId() orgId: string, @Param('id') id: string) {
+        return this.posts.listRevisions(orgId, id);
+    }
+
+
+    @Roles('Viewer' as Role)
+    @Get(':id/revisions/:version')
+    getRevision(@OrgId() orgId: string, @Param('id') id: string, @Param('version') version: string) {
+        return this.posts.getRevision(orgId, id, Number(version));
+    }
+
+    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @HttpPost(':id/revisions/:version/rollback')
+    rollback(
+        @OrgId() orgId: string,
+        @Req() req: any,
+        @Param('id') id: string,
+        @Param('version') version: string
+    ) {
+        return this.posts.rollbackToRevision(orgId, id, req.user.userId, Number(version));
     }
 }
