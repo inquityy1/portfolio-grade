@@ -7,8 +7,9 @@ import { CommentsModule } from '../modules/comments/comments.module';
 import { AuditLogsModule } from '../modules/audit-logs/audit-logs.module';
 import { FormsModule } from '../modules/forms/forms.module';
 import { FieldsModule } from '../modules/fields/fields.module';
+import { SubmissionsModule } from '../modules/submissions/submissions.module';
 
 @Module({
-  imports: [UsersModule, AuthModule, TagsModule, PostsModule, CommentsModule, AuditLogsModule, FormsModule, FieldsModule],
+  imports: [UsersModule, AuthModule, TagsModule, PostsModule, CommentsModule, AuditLogsModule, FormsModule, FieldsModule, SubmissionsModule],
 })
 export class AppModule { }
