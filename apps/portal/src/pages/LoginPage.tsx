@@ -10,7 +10,7 @@ export default function LoginPage() {
     const dispatch = useDispatch();
     const token = useSelector((s: RootState) => s.auth.token);
     const [email, setEmail] = useState('adminA@example.com');
-    const [password, setPassword] = useState('123456');
+    const [password, setPassword] = useState('admin123');
     const [login, { isLoading }] = useLoginMutation();
 
     if (token) return <Navigate to="/" replace />;

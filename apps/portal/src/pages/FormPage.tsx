@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { useGetFormPublicQuery, useSubmitFormMutation } from '@portfolio-grade/app-state'
-import FormRenderer from '../components/FormRenderer'
+import FormRenderer from '../components/formRenderer/FormRenderer'
 
 export default function FormPage() {
     const { id = '' } = useParams()
