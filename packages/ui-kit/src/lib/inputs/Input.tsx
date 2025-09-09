@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const Input = styled.input`
+export const Input = styled.input<React.InputHTMLAttributes<HTMLInputElement>>`
   width: 100%;
   padding: ${({ theme }) => `${theme.spacing(3)} ${theme.spacing(3)}`};
   border-radius: ${({ theme }) => theme.radius.md};

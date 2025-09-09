@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const Button = styled['button']`
+export const Button = styled.button<React.ButtonHTMLAttributes<HTMLButtonElement>>`
   padding: ${({ theme }) => `${theme.spacing(3)} ${theme.spacing(4)}`};
   border-radius: ${({ theme }) => theme.radius.md};
   border: 1px solid ${({ theme }) => theme.colors.border};

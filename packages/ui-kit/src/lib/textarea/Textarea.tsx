@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const Textarea = styled.textarea`
+export const Textarea = styled.textarea<React.TextareaHTMLAttributes<HTMLTextAreaElement>>`
   width: 100%;
   padding: ${({ theme }) => `${theme.spacing(3)} ${theme.spacing(3)}`};
   border-radius: ${({ theme }) => theme.radius.md};

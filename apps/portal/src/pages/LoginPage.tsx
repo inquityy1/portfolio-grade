@@ -4,6 +4,7 @@ import { setToken, setOrg } from '@portfolio-grade/app-state';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '@portfolio-grade/app-state';
 import { Navigate } from 'react-router-dom';
+import { Button, Label, Input, Field } from '@portfolio-grade/ui-kit';
 
 export default function LoginPage() {
     const dispatch = useDispatch();
@@ -39,9 +40,28 @@ export default function LoginPage() {
         <div style={{ padding: 24, maxWidth: 360 }}>
             <h1>Portal Login</h1>
             <form onSubmit={onSubmit} style={{ display: 'grid', gap: 12 }}>
-                <input placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                <input placeholder="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                <button type="submit" disabled={isLoading}>{isLoading ? 'Logging in…' : 'Login'}</button>
+                <Field>
+                    <Label>Email</Label>
+                    <Input
+                        placeholder="email"
+                        value={email}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                    />
+                </Field>
+
+                <Field>
+                    <Label>Password</Label>
+                    <Input
+                        placeholder="password"
+                        type="password"
+                        value={password}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                    />
+                </Field>
+
+                <Button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Logging in…' : 'Login'}
+                </Button>
             </form>
         </div>
     );

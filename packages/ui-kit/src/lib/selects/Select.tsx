@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const Select = styled.select`
+export const Select = styled.select<React.SelectHTMLAttributes<HTMLSelectElement>>`
   width: 100%;
   padding: ${({ theme }) => `${theme.spacing(3)} ${theme.spacing(3)}`};
   border-radius: ${({ theme }) => theme.radius.md};
