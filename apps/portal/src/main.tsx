@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import App from './app/app';
 import FormPage from './pages/FormPage';
 import { UIProvider } from '@portfolio-grade/ui-kit';
+import LoginPage from './pages/LoginPage';
 
 const store = createAppStore()
 
@@ -15,6 +16,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       <UIProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/" element={<App />} />
             <Route path="/forms/:id" element={<FormPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

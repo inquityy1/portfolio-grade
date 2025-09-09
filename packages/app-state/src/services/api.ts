@@ -48,7 +48,21 @@ export const api = createApi({
             }),
             invalidatesTags: (_res, _err, { id }) => [{ type: 'Form', id }],
         }),
+
+        login: builder.mutation<{ access_token: string }, { email: string; password: string }>({
+            query: (body) => ({ url: '/auth/login', method: 'POST', body }),
+        }),
+        register: builder.mutation<{ access_token: string }, { email: string; password: string; name?: string }>({
+            query: (body) => ({ url: '/auth/register', method: 'POST', body }),
+        }),
+        me: builder.query<{
+            id: string;
+            email: string;
+            memberships: { organizationId: string; role: string; organization: { name: string } }[];
+        }, void>({
+            query: () => '/auth/me',
+        }),
     }),
 })
 
-export const { useGetFormPublicQuery, useSubmitFormMutation } = api
+export const { useGetFormPublicQuery, useSubmitFormMutation, useLoginMutation, useRegisterMutation, useMeQuery } = api
