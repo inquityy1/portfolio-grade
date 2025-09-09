@@ -1,4 +1,10 @@
 export * from './lib/ui-kit';
-export * from './lib/theme';
-export * from './lib/Button';
-export { UIProvider } from './lib/theme';
+export * from './lib/themes/Theme';
+export * from './lib/buttons/Button';
+export { UIProvider } from './lib/themes/Theme';
+export * from './lib/labels/Label';
+export * from './lib/inputs/Input';
+export * from './lib/textarea/Textarea';
+export * from './lib/selects/Select';
+export * from './lib/checkboxes/Checkbox';
+export * from './lib/fields/Field';

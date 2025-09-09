@@ -10,7 +10,14 @@
   "include": [
     "src/**/*.ts",
     "src/lib/Button.tsx",
-    "src/lib/theme.tsx"
+    "src/lib/themes/Theme.tsx",
+    "src/lib/buttons/Button.tsx",
+    "src/lib/labels/Label.tsx",
+    "src/lib/inputs/Input.tsx",
+    "src/lib/textarea/Textarea.tsx",
+    "src/lib/selects/Select.tsx",
+    "src/lib/checkboxes/Checkbox.tsx",
+    "src/lib/fields/Field.tsx",
   ],
   "exclude": [
     "jest.config.ts",
