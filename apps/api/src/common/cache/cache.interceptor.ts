@@ -16,6 +16,9 @@ export class CacheInterceptor implements NestInterceptor {
     constructor(private readonly redis: RedisService) { }
 
     intercept(ctx: ExecutionContext, next: CallHandler): Observable<any> {
+        const enabled = process.env.CACHE_ENABLED !== 'false';
+        if (!enabled) return next.handle();
+
         const req = ctx.switchToHttp().getRequest();
         if (req.method !== 'GET') return next.handle();
 
