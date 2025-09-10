@@ -2,9 +2,12 @@ import { Module } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import { PostsController } from './posts.controller';
 import { PrismaService } from '../../infra/prisma.service';
+import { InfraModule } from '../../infra/infra.module';
+import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 
 @Module({
-  providers: [PostsService, PrismaService],
+  imports: [InfraModule],
+  providers: [PostsService, PrismaService, CacheInterceptor],
   controllers: [PostsController],
   exports: [PostsService],
 })

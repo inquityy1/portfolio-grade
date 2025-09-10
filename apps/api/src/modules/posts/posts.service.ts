@@ -1,19 +1,65 @@
 import { Injectable, ForbiddenException, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma.service';
+import { RedisService } from '../../infra/redis.service';
 
 @Injectable()
 export class PostsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly redis: RedisService,
+    ) { }
 
-    list(orgId: string) {
-        return this.prisma.post.findMany({
-            where: { organizationId: orgId },
-            orderBy: { updatedAt: 'desc' },
+    // list(orgId: string) {
+    //     return this.prisma.post.findMany({
+    //         where: { organizationId: orgId },
+    //         orderBy: { updatedAt: 'desc' },
+    //         select: {
+    //             id: true, title: true, version: true, updatedAt: true,
+    //             postTags: { select: { tag: { select: { id: true, name: true } } } }
+    //         },
+    //     });
+    // }
+
+    async list(
+        orgId: string,
+        opts: { limit?: number; cursor?: string | null; q?: string | null; tagId?: string | null } = {}
+    ) {
+        const take = Math.min(Math.max(opts.limit ?? 10, 1), 50);
+
+        const where: any = { organizationId: orgId };
+        if (opts.q) {
+            where.OR = [
+                { title: { contains: opts.q, mode: 'insensitive' } },
+                { content: { contains: opts.q, mode: 'insensitive' } },
+            ];
+        }
+        if (opts.tagId) {
+            where.postTags = { some: { tagId: opts.tagId } };
+        }
+
+        const items = await this.prisma.post.findMany({
+            where,
+            take: take + 1,
+            ...(opts.cursor ? { cursor: { id: opts.cursor }, skip: 1 } : {}),
+            orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
             select: {
-                id: true, title: true, version: true, updatedAt: true,
-                postTags: { select: { tag: { select: { id: true, name: true } } } }
+                id: true,
+                title: true,
+                content: true,
+                version: true,
+                createdAt: true,
+                updatedAt: true,
+                postTags: { select: { tag: { select: { id: true, name: true } } } },
             },
         });
+
+        let nextCursor: string | null = null;
+        if (items.length > take) {
+            const next = items.pop()!;
+            nextCursor = next.id;
+        }
+
+        return { items, nextCursor };
     }
 
     async getOne(orgId: string, id: string) {
@@ -26,6 +72,11 @@ export class PostsService {
         });
         if (!post) throw new NotFoundException('Post not found');
         return post;
+    }
+
+    private async invalidateLists(orgId: string) {
+        await this.redis.delByPrefix(`cache:`);
+        // await this.redis.delByPrefix(`cache:`) // if you embed org in the hashed key, you need to store a parallel index.
     }
 
     // CRUD Posts
@@ -59,6 +110,8 @@ export class PostsService {
                     resourceId: post.id,
                 },
             });
+
+            await this.invalidateLists(orgId);
 
             return post;
         });
@@ -126,6 +179,8 @@ export class PostsService {
                 },
             });
 
+            await this.invalidateLists(orgId);
+
             return tx.post.findFirst({
                 where: { id, organizationId: orgId },
                 include: {
@@ -166,6 +221,8 @@ export class PostsService {
                     resourceId: id,
                 },
             });
+
+            await this.invalidateLists(orgId);
 
             return { ok: true };
         });
@@ -241,6 +298,8 @@ export class PostsService {
             await tx.revision.create({
                 data: { postId, version: nextVersion, content: rev.content },
             });
+
+            await this.invalidateLists(orgId);
 
             return tx.post.findFirst({
                 where: { id: postId },

@@ -8,8 +8,11 @@ import { AuditLogsModule } from '../modules/audit-logs/audit-logs.module';
 import { FormsModule } from '../modules/forms/forms.module';
 import { FieldsModule } from '../modules/fields/fields.module';
 import { SubmissionsModule } from '../modules/submissions/submissions.module';
+import { RedisService } from '../infra/redis.service';
 
 @Module({
   imports: [UsersModule, AuthModule, TagsModule, PostsModule, CommentsModule, AuditLogsModule, FormsModule, FieldsModule, SubmissionsModule],
+  providers: [RedisService],
+  exports: [RedisService],
 })
 export class AppModule { }
