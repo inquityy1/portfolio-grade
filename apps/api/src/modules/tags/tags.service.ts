@@ -1,9 +1,13 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma.service';
+import { OutboxService } from '../../infra/outbox.service';
 
 @Injectable()
 export class TagsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly outbox: OutboxService
+    ) { }
 
     list(orgId: string) {
         return this.prisma.tag.findMany({
@@ -30,6 +34,8 @@ export class TagsService {
                         resourceId: created.id,
                     },
                 });
+
+                await this.outbox.publish('tag.created', { id: created.id, orgId });
 
                 return created;
             });
@@ -64,6 +70,8 @@ export class TagsService {
                     },
                 });
 
+                await this.outbox.publish('tag.updated', { id, orgId });
+
                 return updated;
             });
         } catch (e: any) {
@@ -91,6 +99,8 @@ export class TagsService {
                     resourceId: id,
                 },
             });
+
+            await this.outbox.publish('tag.deleted', { id, orgId });
         });
 
         return { ok: true };

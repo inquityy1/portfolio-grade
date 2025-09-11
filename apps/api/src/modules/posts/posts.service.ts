@@ -1,12 +1,14 @@
 import { Injectable, ForbiddenException, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma.service';
 import { RedisService } from '../../infra/redis.service';
+import { OutboxService } from '../../infra/outbox.service';
 
 @Injectable()
 export class PostsService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly redis: RedisService,
+        private readonly outbox: OutboxService,
     ) { }
 
     // list(orgId: string) {
@@ -113,6 +115,8 @@ export class PostsService {
 
             await this.invalidateLists(orgId);
 
+            await this.outbox.publish('post.created', { id: post.id, orgId });
+
             return post;
         });
     }
@@ -181,6 +185,8 @@ export class PostsService {
 
             await this.invalidateLists(orgId);
 
+            await this.outbox.publish('post.updated', { id, orgId });
+
             return tx.post.findFirst({
                 where: { id, organizationId: orgId },
                 include: {
@@ -223,6 +229,8 @@ export class PostsService {
             });
 
             await this.invalidateLists(orgId);
+
+            await this.outbox.publish('post.deleted', { id, orgId });
 
             return { ok: true };
         });

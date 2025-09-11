@@ -18,8 +18,8 @@ export class FieldsController {
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
     @Post('forms/:id/fields')
     @UseInterceptors(IdempotencyInterceptor)
-    add(@OrgId() orgId: string, @Req() req: any, @Param('id') formId: string, @Body() dto: CreateFieldDto) {
-        return this.fields.add(orgId, req.user.userId, formId, dto);
+    create(@OrgId() orgId: string, @Req() req: any, @Param('id') formId: string, @Body() dto: CreateFieldDto) {
+        return this.fields.create(orgId, req.user.userId, formId, dto);
     }
 
     @Roles('Editor' as Role, 'OrgAdmin' as Role)

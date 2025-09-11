@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma.service';
+import { OutboxService } from '../../infra/outbox.service';
 
 @Injectable()
 export class FieldsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly outbox: OutboxService
+    ) { }
 
-    async add(orgId: string, userId: string, formId: string, dto: { label: string; type: string; config?: any; order?: number }) {
+    async create(orgId: string, userId: string, formId: string, dto: { label: string; type: string; config?: any; order?: number }) {
         // ensure form belongs to org
         const form = await this.prisma.form.findFirst({ where: { id: formId, organizationId: orgId }, select: { id: true } });
         if (!form) throw new NotFoundException('Form not found');
@@ -31,6 +35,8 @@ export class FieldsService {
                     resourceId: field.id,
                 },
             });
+
+            await this.outbox.publish('field.created', { id: field.id, orgId });
 
             return field;
         });
@@ -66,6 +72,8 @@ export class FieldsService {
                 },
             });
 
+            await this.outbox.publish('field.updated', { id: fieldId, orgId });
+
             return updated;
         });
     }
@@ -88,6 +96,8 @@ export class FieldsService {
                     resourceId: fieldId,
                 },
             });
+
+            await this.outbox.publish('field.deleted', { id: fieldId, orgId });
         });
 
         return { ok: true };

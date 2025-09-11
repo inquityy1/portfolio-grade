@@ -1,9 +1,13 @@
 import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma.service';
+import { OutboxService } from '../../infra/outbox.service';
 
 @Injectable()
 export class FormsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly outbox: OutboxService
+    ) { }
 
     list(orgId: string) {
         return this.prisma.form.findMany({
@@ -45,6 +49,8 @@ export class FormsService {
                     },
                 });
 
+                await this.outbox.publish('form.created', { id: created.id, orgId });
+
                 return created;
             });
         } catch (e: any) {
@@ -84,6 +90,8 @@ export class FormsService {
                 },
             });
 
+            await this.outbox.publish('form.updated', { id, orgId });
+
             return updated;
         });
     }
@@ -106,6 +114,8 @@ export class FormsService {
                     resourceId: id,
                 },
             });
+
+            await this.outbox.publish('form.deleted', { id, orgId });
         });
 
         return { ok: true };

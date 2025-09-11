@@ -10,6 +10,8 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
+import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
+import { RateLimit } from '../../common/decorators/rate-limit.decorator';
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
@@ -18,6 +20,8 @@ export class PostsController {
 
     @Roles('Viewer' as Role)
     @UseInterceptors(CacheInterceptor)
+    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @UseGuards(RateLimitGuard)
     @Get()
     list(
         @OrgId() orgId: string,
@@ -44,6 +48,8 @@ export class PostsController {
     // Create / update / delete
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
     @UseInterceptors(IdempotencyInterceptor)
+    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @UseGuards(RateLimitGuard)
     @HttpPost()
     create(@OrgId() orgId: string, @Req() req: any, @Body() dto: CreatePostDto) {
         const authorId = req.user.userId;
@@ -52,6 +58,8 @@ export class PostsController {
 
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
     @UseInterceptors(IdempotencyInterceptor)
+    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @UseGuards(RateLimitGuard)
     @Patch(':id')
     update(@OrgId() orgId: string, @Req() req: any, @Param('id') id: string, @Body() dto: UpdatePostDto) {
         const authorId = req.user.userId;
@@ -60,6 +68,8 @@ export class PostsController {
 
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
     @UseInterceptors(IdempotencyInterceptor)
+    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @UseGuards(RateLimitGuard)
     @Delete(':id')
     remove(@OrgId() orgId: string, @Param('id') id: string, @Req() req: any,) {
         const userId = req.user.userId;

@@ -10,6 +10,8 @@ import { CreateFormDto } from './dto/create-form.dto';
 import { UpdateFormDto } from './dto/update-form.dto';
 import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
+import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
+import { RateLimit } from '../../common/decorators/rate-limit.decorator';
 
 @Controller('forms')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
@@ -17,36 +19,44 @@ export class FormsController {
     constructor(private readonly forms: FormsService) { }
 
     @Roles('Viewer' as Role)
-    @Get()
     @UseInterceptors(CacheInterceptor)
+    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @UseGuards(RateLimitGuard)
+    @Get()
     list(@OrgId() orgId: string) {
         return this.forms.list(orgId);
     }
 
     @Roles('Viewer' as Role)
-    @Get(':id')
     @UseInterceptors(CacheInterceptor)
+    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @UseGuards(RateLimitGuard)
+    @Get(':id')
     get(@OrgId() orgId: string, @Param('id') id: string) {
         return this.forms.get(orgId, id);
     }
 
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
-    @Post()
     @UseInterceptors(IdempotencyInterceptor)
+    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @UseGuards(RateLimitGuard)
+    @Post()
     create(@OrgId() orgId: string, @Req() req: any, @Body() dto: CreateFormDto) {
         return this.forms.create(orgId, req.user.userId, dto);
     }
 
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
-    @Patch(':id')
     @UseInterceptors(IdempotencyInterceptor)
+    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @UseGuards(RateLimitGuard)
+    @Patch(':id')
     update(@OrgId() orgId: string, @Req() req: any, @Param('id') id: string, @Body() dto: UpdateFormDto) {
         return this.forms.update(orgId, req.user.userId, id, dto);
     }
 
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
-    @Delete(':id')
     @UseInterceptors(IdempotencyInterceptor)
+    @Delete(':id')
     remove(@OrgId() orgId: string, @Req() req: any, @Param('id') id: string) {
         return this.forms.remove(orgId, req.user.userId, id);
     }

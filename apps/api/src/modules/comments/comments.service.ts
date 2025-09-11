@@ -1,9 +1,13 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../infra/prisma.service';
+import { OutboxService } from '../../infra/outbox.service';
 
 @Injectable()
 export class CommentsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly outbox: OutboxService
+    ) { }
 
     async list(orgId: string, postId: string) {
         const post = await this.prisma.post.findFirst({ where: { id: postId, organizationId: orgId }, select: { id: true } });
@@ -35,6 +39,8 @@ export class CommentsService {
                     resourceId: comment.id,
                 },
             });
+
+            await this.outbox.publish('comment.created', { id: comment.id, postId, orgId });
 
             return comment;
         });
@@ -78,6 +84,8 @@ export class CommentsService {
                 },
             });
 
+            await this.outbox.publish('comment.updated', { id: commentId, orgId });
+
             return updated;
         });
     }
@@ -115,6 +123,8 @@ export class CommentsService {
                 },
             });
 
+            await this.outbox.publish('comment.deleted', { id: commentId, orgId });
+
             return { ok: true };
         });
     }
@@ -148,6 +158,8 @@ export class CommentsService {
                     resourceId: commentId,
                 },
             });
+
+            await this.outbox.publish('comment.restored', { id: commentId, orgId });
 
             return { ok: true };
         });
