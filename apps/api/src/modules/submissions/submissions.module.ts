@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
 import { SubmissionsController } from './submissions.controller';
 import { SubmissionsService } from './submissions.service';
-import { PrismaService } from '../../infra/prisma.service';
+import { InfraModule } from '../../infra/infra.module';
+import { CacheInterceptor } from '../../common/cache/cache.interceptor';
+import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
 
 @Module({
+  imports: [InfraModule],
   controllers: [SubmissionsController],
-  providers: [SubmissionsService, PrismaService],
+  providers: [SubmissionsService, CacheInterceptor, IdempotencyInterceptor],
   exports: [SubmissionsService],
 })
 export class SubmissionsModule { }

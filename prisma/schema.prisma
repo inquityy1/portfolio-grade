@@ -222,5 +222,5 @@ model IdempotencyKey {
   response  Json?
   createdAt DateTime @default(now())
 
-  @@unique([orgId, route, key])
+  @@unique([orgId, route, key], name:"orgId_route_key")
 }

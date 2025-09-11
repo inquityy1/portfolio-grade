@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TagsService } from './tags.service';
 import { TagsController } from './tags.controller';
-import { PrismaService } from '../../infra/prisma.service';
+import { InfraModule } from '../../infra/infra.module';
+import { CacheInterceptor } from '../../common/cache/cache.interceptor';
+import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
 
 @Module({
-  providers: [TagsService, PrismaService],
+  imports: [InfraModule],
+  providers: [TagsService, CacheInterceptor, IdempotencyInterceptor],
   controllers: [TagsController],
   exports: [TagsService],
 })

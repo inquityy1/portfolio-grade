@@ -1,13 +1,14 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards, UseInterceptors } from '@nestjs/common';
 import { SubmissionsService } from './submissions.service';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { OrgId } from '../../common/decorators/org.decorator';
-
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import type { Role } from '@prisma/client';
+import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
+import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 
 @Controller()
 export class SubmissionsController {
@@ -16,6 +17,7 @@ export class SubmissionsController {
     // PUBLIC submit form
     @UseGuards(TenantGuard)
     @Post('public/forms/:id/submit')
+    @UseInterceptors(IdempotencyInterceptor)
     submitPublic(@OrgId() orgId: string, @Param('id') formId: string, @Body() dto: CreateSubmissionDto) {
         return this.submissions.createSubmission(orgId, formId, dto.data);
     }
@@ -24,6 +26,7 @@ export class SubmissionsController {
     @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
     @Get('forms/:id/submissions')
+    @UseInterceptors(CacheInterceptor)
     listAdmin(@OrgId() orgId: string, @Param('id') formId: string) {
         return this.submissions.listSubmissions(orgId, formId);
     }
@@ -31,6 +34,7 @@ export class SubmissionsController {
     @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
     @Roles('Viewer' as Role, 'Editor' as Role, 'OrgAdmin' as Role)
     @Get('submissions/:submissionId')
+    @UseInterceptors(CacheInterceptor)
     getAdmin(@OrgId() orgId: string, @Param('submissionId') submissionId: string) {
         return this.submissions.getSubmission(orgId, submissionId);
     }

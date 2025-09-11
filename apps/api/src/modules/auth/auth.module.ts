@@ -7,19 +7,20 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersModule } from '../users/users.module';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { PrismaService } from '../../infra/prisma.service';
+import { InfraModule } from '../../infra/infra.module';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
+    InfraModule,
     JwtModule.register({
       secret: process.env.JWT_ACCESS_SECRET || 'dev_secret',
       signOptions: { expiresIn: process.env.JWT_ACCESS_TTL || '15m' },
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard, PrismaService],
+  providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
   exports: [AuthService],
 })
 export class AuthModule { }

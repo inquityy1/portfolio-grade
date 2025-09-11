@@ -1,14 +1,15 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post as HttpPost, UseGuards, Req, Query, UseInterceptors } from '@nestjs/common';
+import type { Role } from '@prisma/client';
 import { PostsService } from './posts.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { OrgId } from '../../common/decorators/org.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import type { Role } from '@prisma/client';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { CacheInterceptor } from '../../common/cache/cache.interceptor';
+import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
@@ -42,7 +43,7 @@ export class PostsController {
 
     // Create / update / delete
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
-    @UseInterceptors(CacheInterceptor)
+    @UseInterceptors(IdempotencyInterceptor)
     @HttpPost()
     create(@OrgId() orgId: string, @Req() req: any, @Body() dto: CreatePostDto) {
         const authorId = req.user.userId;
@@ -50,7 +51,7 @@ export class PostsController {
     }
 
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
-    @UseInterceptors(CacheInterceptor)
+    @UseInterceptors(IdempotencyInterceptor)
     @Patch(':id')
     update(@OrgId() orgId: string, @Req() req: any, @Param('id') id: string, @Body() dto: UpdatePostDto) {
         const authorId = req.user.userId;
@@ -58,7 +59,7 @@ export class PostsController {
     }
 
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
-    @UseInterceptors(CacheInterceptor)
+    @UseInterceptors(IdempotencyInterceptor)
     @Delete(':id')
     remove(@OrgId() orgId: string, @Param('id') id: string, @Req() req: any,) {
         const userId = req.user.userId;
@@ -82,7 +83,7 @@ export class PostsController {
     }
 
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
-    @UseInterceptors(CacheInterceptor)
+    @UseInterceptors(IdempotencyInterceptor)
     @HttpPost(':id/revisions/:version/rollback')
     rollback(
         @OrgId() orgId: string,
