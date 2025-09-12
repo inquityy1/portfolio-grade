@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../infra/prisma.service';
-import { OutboxService } from '../../infra/outbox.service';
+import { PrismaService } from '../../infra/services/prisma.service';
+import { OutboxService } from '../../infra/services/outbox.service';
 
 @Injectable()
 export class CommentsService {

@@ -8,7 +8,7 @@ import { AuditLogsModule } from '../modules/audit-logs/audit-logs.module';
 import { FormsModule } from '../modules/forms/forms.module';
 import { FieldsModule } from '../modules/fields/fields.module';
 import { SubmissionsModule } from '../modules/submissions/submissions.module';
-import { RedisService } from '../infra/redis.service';
+import { RedisService } from '../infra/services/redis.service';
 import { AdminJobsModule } from '../modules/admin-jobs/admin-jobs.module';
 
 @Module({

@@ -118,6 +118,14 @@ async function main() {
         ]
     });
 
+    // TagAggregate - simulate some tag usage statistics
+    await prisma.tagAggregate.createMany({
+        data: [
+            { organizationId: orgA.id, tagId: tagNews.id, count: 5 },
+            { organizationId: orgA.id, tagId: tagDev.id, count: 3 },
+        ]
+    });
+
     console.log('Seed complete:', { org: orgA.name, post: post.title, form: form.name });
 }
 

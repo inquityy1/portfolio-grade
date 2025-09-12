@@ -80,4 +80,24 @@ export class QueueService {
         }
         return q.add(jobName, payload, opts);
     }
+
+    async addRepeatable<T = any>(
+        queueName: string,
+        jobName: string,
+        payload: T,
+        everyMsOrCron: number | string,
+        opts?: Omit<JobsOptions, 'repeat'>
+    ) {
+        const q = this.getQueue(queueName);
+        if (!q) {
+            this.logger.debug(`Queue "${queueName}" unavailable. Skipping repeatable ${jobName}.`);
+            return null;
+        }
+        return q.add(jobName, payload, {
+            ...opts,
+            repeat: typeof everyMsOrCron === 'number'
+                ? { every: everyMsOrCron }
+                : { pattern: everyMsOrCron },
+        });
+    }
 }

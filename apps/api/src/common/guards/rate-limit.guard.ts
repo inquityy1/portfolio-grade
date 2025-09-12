@@ -2,7 +2,7 @@ import {
     CanActivate, ExecutionContext, Injectable, HttpException, HttpStatus
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { RateLimitService } from '../../infra/rate-limit.service';
+import { RateLimitService } from '../../infra/services/rate-limit.service';
 import { RATE_LIMIT_KEY, RateLimitConfig } from '../decorators/rate-limit.decorator';
 import { Request } from 'express';
 

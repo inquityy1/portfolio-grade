@@ -1,6 +1,6 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Observable, from, of, switchMap, tap } from 'rxjs';
-import { RedisService } from '../../infra/redis.service';
+import { RedisService } from '../../infra/services/redis.service';
 import * as crypto from 'crypto';
 
 function stableQS(query: Record<string, any>) {

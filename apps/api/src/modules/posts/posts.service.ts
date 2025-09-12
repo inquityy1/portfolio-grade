@@ -1,7 +1,9 @@
 import { Injectable, ForbiddenException, NotFoundException, ConflictException } from '@nestjs/common';
-import { PrismaService } from '../../infra/prisma.service';
-import { RedisService } from '../../infra/redis.service';
-import { OutboxService } from '../../infra/outbox.service';
+import { PrismaService } from '../../infra/services/prisma.service';
+import { RedisService } from '../../infra/services/redis.service';
+import { OutboxService } from '../../infra/services/outbox.service';
+import { CreatePostDto } from './dto/create-post.dto';
+import { PostPreviewProcessor } from '../../infra/jobs/processors/post-preview.processor';
 
 @Injectable()
 export class PostsService {
@@ -9,6 +11,7 @@ export class PostsService {
         private readonly prisma: PrismaService,
         private readonly redis: RedisService,
         private readonly outbox: OutboxService,
+        private readonly preview: PostPreviewProcessor,
     ) { }
 
     // list(orgId: string) {
@@ -82,7 +85,7 @@ export class PostsService {
     }
 
     // CRUD Posts
-    async create(orgId: string, authorId: string, data: { title: string; content: string; tagIds?: string[] }) {
+    async create(orgId: string, authorId: string, data: CreatePostDto) {
         const tagIds = data.tagIds ?? [];
         if (tagIds.length) {
             const count = await this.prisma.tag.count({ where: { id: { in: tagIds }, organizationId: orgId } });
@@ -103,6 +106,7 @@ export class PostsService {
                 include: { postTags: { include: { tag: true } }, revisions: true },
             });
 
+
             await tx.auditLog.create({
                 data: {
                     organizationId: orgId,
@@ -114,6 +118,8 @@ export class PostsService {
             });
 
             await this.invalidateLists(orgId);
+
+            await this.preview.enqueue(orgId, post.id).catch(() => undefined);
 
             await this.outbox.publish('post.created', { id: post.id, orgId });
 
@@ -184,6 +190,8 @@ export class PostsService {
             });
 
             await this.invalidateLists(orgId);
+
+            await this.preview.enqueue(orgId, id).catch(() => undefined);
 
             await this.outbox.publish('post.updated', { id, orgId });
 
