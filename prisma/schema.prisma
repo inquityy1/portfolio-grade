@@ -224,3 +224,17 @@ model IdempotencyKey {
 
   @@unique([orgId, route, key], name:"orgId_route_key")
 }
+
+/**
+ * -------- BullMQ --------
+ */
+model TagAggregate {
+  id             String   @id @default(cuid())
+  organizationId String
+  tagId          String
+  count          Int
+  calculatedAt   DateTime @default(now())
+
+  @@unique([organizationId, tagId])
+  @@index([organizationId, calculatedAt])
+}

@@ -9,9 +9,21 @@ import { FormsModule } from '../modules/forms/forms.module';
 import { FieldsModule } from '../modules/fields/fields.module';
 import { SubmissionsModule } from '../modules/submissions/submissions.module';
 import { RedisService } from '../infra/redis.service';
+import { AdminJobsModule } from '../modules/admin-jobs/admin-jobs.module';
 
 @Module({
-  imports: [UsersModule, AuthModule, TagsModule, PostsModule, CommentsModule, AuditLogsModule, FormsModule, FieldsModule, SubmissionsModule],
+  imports: [
+    UsersModule,
+    AuthModule,
+    TagsModule,
+    PostsModule,
+    CommentsModule,
+    AuditLogsModule,
+    FormsModule,
+    FieldsModule,
+    SubmissionsModule,
+    AdminJobsModule
+  ],
   providers: [RedisService],
   exports: [RedisService],
 })

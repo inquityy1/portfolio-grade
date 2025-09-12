@@ -40,6 +40,8 @@ export class PostsController {
 
     @Roles('Viewer' as Role)
     @UseInterceptors(CacheInterceptor)
+    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @UseGuards(RateLimitGuard)
     @Get(':id')
     getOne(@OrgId() orgId: string, @Param('id') id: string) {
         return this.posts.getOne(orgId, id);
