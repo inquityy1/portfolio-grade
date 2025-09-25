@@ -15,21 +15,21 @@ import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotenc
 export class FieldsController {
     constructor(private readonly fields: FieldsService) { }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @Post('forms/:id/fields')
     @UseInterceptors(IdempotencyInterceptor)
     create(@OrgId() orgId: string, @Req() req: any, @Param('id') formId: string, @Body() dto: CreateFieldDto) {
         return this.fields.create(orgId, req.user.userId, formId, dto);
     }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @Patch('fields/:fieldId')
     @UseInterceptors(IdempotencyInterceptor)
     update(@OrgId() orgId: string, @Req() req: any, @Param('fieldId') fieldId: string, @Body() dto: UpdateFieldDto) {
         return this.fields.update(orgId, req.user.userId, fieldId, dto);
     }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @Delete('fields/:fieldId')
     @UseInterceptors(IdempotencyInterceptor)
     remove(@OrgId() orgId: string, @Req() req: any, @Param('fieldId') fieldId: string) {

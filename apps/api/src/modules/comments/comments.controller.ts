@@ -49,7 +49,7 @@ export class CommentsController {
     }
 
     // Restore comment
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @Post('comments/:id/restore')
     @UseInterceptors(IdempotencyInterceptor)
     restore(@OrgId() orgId: string, @Param('id') id: string, @Req() req: any) {

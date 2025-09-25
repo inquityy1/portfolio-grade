@@ -28,7 +28,7 @@ export class SubmissionsController {
 
     // ADMIN list submissions for a form
     @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     // @UseInterceptors(CacheInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
@@ -38,7 +38,7 @@ export class SubmissionsController {
     }
 
     @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
-    @Roles('Viewer' as Role, 'Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Viewer' as Role, 'Editor' as Role)
     // @UseInterceptors(CacheInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)

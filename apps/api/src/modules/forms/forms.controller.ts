@@ -36,7 +36,7 @@ export class FormsController {
         return this.forms.get(orgId, id);
     }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
@@ -45,7 +45,7 @@ export class FormsController {
         return this.forms.create(orgId, req.user.userId, dto);
     }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
@@ -54,7 +54,7 @@ export class FormsController {
         return this.forms.update(orgId, req.user.userId, id, dto);
     }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
     @Delete(':id')
     remove(@OrgId() orgId: string, @Req() req: any, @Param('id') id: string) {

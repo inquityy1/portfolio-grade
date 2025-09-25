@@ -13,7 +13,7 @@ import type { Role } from '@prisma/client';
 export class AuditLogsController {
     constructor(private readonly logs: AuditLogsService) { }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @Get()
     // @UseInterceptors(CacheInterceptor)
     list(@OrgId() orgId: string, @Query() query: any) {

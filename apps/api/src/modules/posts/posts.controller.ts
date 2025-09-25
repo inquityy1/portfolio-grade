@@ -48,7 +48,7 @@ export class PostsController {
     }
 
     // Create / update / delete
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
@@ -58,7 +58,7 @@ export class PostsController {
         return this.posts.create(orgId, authorId, dto);
     }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
@@ -68,7 +68,7 @@ export class PostsController {
         return this.posts.update(orgId, id, authorId, dto);
     }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
@@ -94,7 +94,7 @@ export class PostsController {
         return this.posts.getRevision(orgId, id, Number(version));
     }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
     @HttpPost(':id/revisions/:version/rollback')
     rollback(

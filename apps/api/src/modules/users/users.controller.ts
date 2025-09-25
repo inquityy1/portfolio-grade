@@ -26,7 +26,7 @@ export class UsersController {
         return this.users.findAllByOrg(orgId);
     }
 
-    @Roles('OrgAdmin' as Role, 'Editor' as Role)
+    @Roles('Editor' as Role)
     // @UseInterceptors(CacheInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)

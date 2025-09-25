@@ -45,6 +45,7 @@ export class RolesGuard implements CanActivate {
         const have = roleRank[membership.role];
         const ok = have >= needed;
 
+
         if (!ok) throw new ForbiddenException('Insufficient role');
         return true;
     }

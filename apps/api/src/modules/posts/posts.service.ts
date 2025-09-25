@@ -152,9 +152,10 @@ export class PostsService {
             if (!membership) throw new ForbiddenException('No membership for this organization');
 
             const isAdmin = membership.role === 'OrgAdmin';
+            const isEditor = membership.role === 'Editor';
             const isAuthor = existing.authorId === userId;
-            if (!isAdmin && !isAuthor) {
-                throw new ForbiddenException('Only the author or an OrgAdmin can edit this post');
+            if (!isAdmin && !isEditor && !isAuthor) {
+                throw new ForbiddenException('Only the author, Editor, or OrgAdmin can edit this post');
             }
 
             const updated = await tx.post.updateMany({
@@ -220,9 +221,10 @@ export class PostsService {
             if (!membership) throw new ForbiddenException('No membership for this organization');
 
             const isAdmin = membership.role === 'OrgAdmin';
+            const isEditor = membership.role === 'Editor';
             const isAuthor = existing.authorId === userId;
-            if (!isAdmin && !isAuthor) {
-                throw new ForbiddenException('Only the author or an OrgAdmin can delete this post');
+            if (!isAdmin && !isEditor && !isAuthor) {
+                throw new ForbiddenException('Only the author, Editor, or OrgAdmin can delete this post');
             }
 
             await tx.post.delete({ where: { id } });

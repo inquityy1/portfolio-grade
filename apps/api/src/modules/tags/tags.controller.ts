@@ -25,7 +25,7 @@ export class TagsController {
         return this.tags.list(orgId);
     }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
@@ -34,7 +34,7 @@ export class TagsController {
         return this.tags.create(orgId, req.user.userId, body.name.trim());
     }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
@@ -43,7 +43,7 @@ export class TagsController {
         return this.tags.update(orgId, req.user.userId, id, { name: body.name?.trim() });
     }
 
-    @Roles('Editor' as Role, 'OrgAdmin' as Role)
+    @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
     @Delete(':id')
     remove(@OrgId() orgId: string, @Req() req: any, @Param('id') id: string) {
