@@ -133,10 +133,10 @@ export class CommentsService {
         return this.prisma.$transaction(async (tx) => {
             const comment = await tx.comment.findFirst({
                 where: { id: commentId, post: { organizationId: orgId } },
-                select: { id: true, deletedAt: true },
+                select: { id: true, postId: true, deletedAt: true },
             });
             if (!comment) throw new NotFoundException('Comment not found');
-            if (!comment.deletedAt) return { ok: true }; // already active
+            if (!comment.deletedAt) return { ok: true, postId: comment.postId }; // already active
 
             // Only Editor/Admin can restore
             const membership = await tx.membership.findUnique({
@@ -161,7 +161,7 @@ export class CommentsService {
 
             await this.outbox.publish('comment.restored', { id: commentId, orgId });
 
-            return { ok: true };
+            return { ok: true, postId: comment.postId };
         });
     }
 }

@@ -8,7 +8,7 @@ import { OrgId } from '../../common/decorators/org.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { CacheInterceptor } from '../../common/cache/cache.interceptor';
+// import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
 import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
 import { RateLimit } from '../../common/decorators/rate-limit.decorator';
@@ -19,7 +19,7 @@ export class PostsController {
     constructor(private readonly posts: PostsService) { }
 
     @Roles('Viewer' as Role)
-    @UseInterceptors(CacheInterceptor)
+    // @UseInterceptors(CacheInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @Get()
@@ -39,7 +39,7 @@ export class PostsController {
     }
 
     @Roles('Viewer' as Role)
-    @UseInterceptors(CacheInterceptor)
+    // @UseInterceptors(CacheInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @Get(':id')
@@ -80,7 +80,7 @@ export class PostsController {
 
     // Revisions
     @Roles('Viewer' as Role)
-    @UseInterceptors(CacheInterceptor)
+    // @UseInterceptors(CacheInterceptor)
     @Get(':id/revisions')
     listRevisions(@OrgId() orgId: string, @Param('id') id: string) {
         return this.posts.listRevisions(orgId, id);
@@ -88,7 +88,7 @@ export class PostsController {
 
 
     @Roles('Viewer' as Role)
-    @UseInterceptors(CacheInterceptor)
+    // @UseInterceptors(CacheInterceptor)
     @Get(':id/revisions/:version')
     getRevision(@OrgId() orgId: string, @Param('id') id: string, @Param('version') version: string) {
         return this.posts.getRevision(orgId, id, Number(version));

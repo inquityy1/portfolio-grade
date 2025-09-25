@@ -6,7 +6,7 @@ import { TenantGuard } from '../../common/guards/tenant.guard';
 import { OrgId } from '../../common/decorators/org.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import type { Role } from '@prisma/client';
-import { CacheInterceptor } from '../../common/cache/cache.interceptor';
+// import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 
 @Controller('audit-logs')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
@@ -15,7 +15,7 @@ export class AuditLogsController {
 
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
     @Get()
-    @UseInterceptors(CacheInterceptor)
+    // @UseInterceptors(CacheInterceptor)
     list(@OrgId() orgId: string, @Query() query: any) {
         return this.logs.list(orgId, query);
     }

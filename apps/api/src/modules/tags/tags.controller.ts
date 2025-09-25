@@ -7,7 +7,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import type { Role } from '@prisma/client';
 import { TagsService } from './tags.service';
 import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
-import { CacheInterceptor } from '../../common/cache/cache.interceptor';
+// import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
 import { RateLimit } from '../../common/decorators/rate-limit.decorator';
 
@@ -17,7 +17,7 @@ export class TagsController {
     constructor(private readonly tags: TagsService) { }
 
     @Roles('Viewer' as Role)
-    @UseInterceptors(CacheInterceptor)
+    // @UseInterceptors(CacheInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @Get()

@@ -54,6 +54,7 @@ export class PostsService {
                 version: true,
                 createdAt: true,
                 updatedAt: true,
+                author: { select: { name: true } },
                 postTags: { select: { tag: { select: { id: true, name: true } } } },
             },
         });

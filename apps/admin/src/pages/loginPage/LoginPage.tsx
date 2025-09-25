@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setToken, setOrg, useLoginMutation } from '@portfolio-grade/app-state'
 import type { RootState } from '@portfolio-grade/app-state'
 import { Navigate } from 'react-router-dom'
-import { Button, Input, Label, Field } from '@portfolio-grade/ui-kit'
+import { Button, Input, Label, Field, Container, Alert } from '@portfolio-grade/ui-kit'
 
 export default function LoginPage() {
     const dispatch = useDispatch()
@@ -29,7 +29,7 @@ export default function LoginPage() {
     }
 
     return (
-        <div style={{ padding: 24, maxWidth: 380 }}>
+        <Container maxWidth="380px">
             <h1>Admin Login</h1>
             <form onSubmit={onSubmit} style={{ display: 'grid', gap: 12 }}>
                 <Field>
@@ -42,6 +42,6 @@ export default function LoginPage() {
                 </Field>
                 <Button type="submit" disabled={isLoading}>{isLoading ? 'Logging in…' : 'Login'}</Button>
             </form>
-        </div>
+        </Container>
     )
 }

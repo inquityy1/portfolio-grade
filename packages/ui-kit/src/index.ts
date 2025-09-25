@@ -8,3 +8,6 @@ export * from './lib/textarea/Textarea';
 export * from './lib/selects/Select';
 export * from './lib/checkboxes/Checkbox';
 export * from './lib/fields/Field';
+export * from './lib/cards/Card';
+export * from './lib/containers/Container';
+export * from './lib/alerts/Alert';

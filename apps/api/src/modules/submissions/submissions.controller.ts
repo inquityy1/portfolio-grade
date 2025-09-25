@@ -8,7 +8,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import type { Role } from '@prisma/client';
 import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
-import { CacheInterceptor } from '../../common/cache/cache.interceptor';
+// import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
 import { RateLimit } from '../../common/decorators/rate-limit.decorator';
 
@@ -29,7 +29,7 @@ export class SubmissionsController {
     // ADMIN list submissions for a form
     @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
     @Roles('Editor' as Role, 'OrgAdmin' as Role)
-    @UseInterceptors(CacheInterceptor)
+    // @UseInterceptors(CacheInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @Get('forms/:id/submissions')
@@ -39,7 +39,7 @@ export class SubmissionsController {
 
     @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
     @Roles('Viewer' as Role, 'Editor' as Role, 'OrgAdmin' as Role)
-    @UseInterceptors(CacheInterceptor)
+    // @UseInterceptors(CacheInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @Get('submissions/:submissionId')

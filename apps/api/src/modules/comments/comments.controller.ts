@@ -8,7 +8,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import type { Role } from '@prisma/client';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { CacheInterceptor } from '../../common/cache/cache.interceptor';
+// import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
 
 @Controller()
@@ -19,7 +19,7 @@ export class CommentsController {
     // List comments
     @Roles('Viewer' as Role)
     @Get('posts/:postId/comments')
-    @UseInterceptors(CacheInterceptor)
+    // @UseInterceptors(CacheInterceptor)
     list(@OrgId() orgId: string, @Param('postId') postId: string) {
         return this.comments.list(orgId, postId);
     }

@@ -67,17 +67,17 @@ async function main() {
         data: {
             organizationId: orgA.id,
             authorId: adminA.id,
-            title: 'Hello World Post',
-            content: 'Initial content',
+            title: 'Welcome to Our Platform',
+            content: 'This is our first post! We\'re excited to share updates and news with our community. Stay tuned for more content coming soon.',
             version: 1,
             revisions: {
-                create: [{ version: 1, content: 'Initial content (rev 1)' }]
+                create: [{ version: 1, content: 'This is our first post! We\'re excited to share updates and news with our community. Stay tuned for more content coming soon.' }]
             },
             postTags: {
                 create: [{ tagId: tagNews.id }, { tagId: tagDev.id }]
             },
             comments: {
-                create: [{ authorId: editorA.id, content: 'Looks good!' }]
+                create: [{ authorId: editorA.id, content: 'Great first post! Looking forward to more updates.' }]
             }
         },
         include: { revisions: true, comments: true, postTags: { include: { tag: true } } }

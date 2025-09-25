@@ -8,8 +8,8 @@ import { RateLimit } from '../../common/decorators/rate-limit.decorator';
 import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 
 @UseGuards(TenantGuard)
-@UseInterceptors(CacheInterceptor)
-@RateLimit({ perIp: { limit: 10, windowSec: 60 } })
+// @UseInterceptors(CacheInterceptor)
+@RateLimit({ perIp: { limit: 10, windowSec: 10 } })
 @UseGuards(RateLimitGuard)
 @Controller('public/forms')
 export class FormsPublicController {

@@ -1,7 +1,8 @@
 import styled from 'styled-components';
+import { forwardRef } from 'react';
 
-export const Textarea = styled.textarea<React.TextareaHTMLAttributes<HTMLTextAreaElement>>`
-  width: 100%;
+const StyledTextarea = styled.textarea<React.TextareaHTMLAttributes<HTMLTextAreaElement>>`
+  width: 90%;
   padding: ${({ theme }) => `${theme.spacing(3)} ${theme.spacing(3)}`};
   border-radius: ${({ theme }) => theme.radius.md};
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -15,3 +16,7 @@ export const Textarea = styled.textarea<React.TextareaHTMLAttributes<HTMLTextAre
     box-shadow: 0 0 0 2px rgba(88,101,242,0.25);
   }
 `;
+
+export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
+  (props, ref) => <StyledTextarea {...props} ref={ref} />
+);

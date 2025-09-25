@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 export const Input = styled.input<React.InputHTMLAttributes<HTMLInputElement>>`
-  width: 100%;
+  width: 90%;
   padding: ${({ theme }) => `${theme.spacing(3)} ${theme.spacing(3)}`};
   border-radius: ${({ theme }) => theme.radius.md};
   border: 1px solid ${({ theme }) => theme.colors.border};

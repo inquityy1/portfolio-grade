@@ -1,5 +1,3 @@
-import FormsListPage from '../pages/FormsListPage';
-
 export default function App() {
-  return <FormsListPage />;
+  return <div>hello app</div>;
 }

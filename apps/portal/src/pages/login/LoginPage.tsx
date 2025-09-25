@@ -1,13 +1,20 @@
 import { useState } from 'react';
-import { useLoginMutation } from '@portfolio-grade/app-state';
-import { setToken, setOrg } from '@portfolio-grade/app-state';
+import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useLoginMutation, setToken, setOrg } from '@portfolio-grade/app-state';
 import type { RootState } from '@portfolio-grade/app-state';
-import { Navigate } from 'react-router-dom';
-import { Button, Label, Input, Field } from '@portfolio-grade/ui-kit';
+import { Button, Label, Input, Field, Container, Alert } from '@portfolio-grade/ui-kit';
+
+function api(path: string) {
+    const B = String(import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+    return /\/api$/.test(B) ? `${B}${path}` : `${B}/api${path}`;
+}
 
 export default function LoginPage() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+
     const token = useSelector((s: RootState) => s.auth.token);
     const [email, setEmail] = useState('adminA@example.com');
     const [password, setPassword] = useState('admin123');
@@ -18,26 +25,46 @@ export default function LoginPage() {
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
         try {
+            // 1) get JWT
             const { access_token } = await login({ email, password }).unwrap();
+
+            // persist token everywhere your app expects it
             dispatch(setToken(access_token));
-            // fetch /auth/me to get orgs/roles
-            const base = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
-            const me = await fetch(`${base}/auth/me`, {
-                headers: { Authorization: `Bearer ${access_token}` },
-            }).then((r) => r.json());
+            localStorage.setItem('token', access_token);
+
+            // 2) resolve orgId (from login response if enriched; else via /auth/me)
+            let orgId: string | undefined;
+
+            // Try /auth/me (no x-org-id needed)
+            const me = await axios
+                .get(api('/auth/me'), {
+                    headers: { Accept: 'application/json', Authorization: `Bearer ${access_token}` },
+                })
+                .then((r) => r.data)
+                .catch(() => null);
 
             const first = me?.memberships?.[0];
             if (first?.organizationId) {
-                dispatch(setOrg(first.organizationId));
+                orgId = String(first.organizationId);
             }
+
+            if (orgId) {
+                dispatch(setOrg(orgId));
+                localStorage.setItem('orgId', orgId);
+            } else {
+                // optional: you could redirect to an org-picker if multi-tenant
+                // for now just stay logged in without org (protected pages will complain)
+            }
+
+            navigate('/', { replace: true });
         } catch (err) {
-            alert('Login failed');
             console.error(err);
+            alert('Login failed');
         }
     }
 
     return (
-        <div style={{ padding: 24, maxWidth: 360 }}>
+        <Container maxWidth="360px">
             <h1>Portal Login</h1>
             <form onSubmit={onSubmit} style={{ display: 'grid', gap: 12 }}>
                 <Field>
@@ -63,6 +90,6 @@ export default function LoginPage() {
                     {isLoading ? 'Logging in…' : 'Login'}
                 </Button>
             </form>
-        </div>
+        </Container>
     );
 }

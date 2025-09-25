@@ -9,7 +9,7 @@ import { OrgId } from '../../common/decorators/org.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
 import { RateLimit } from '../../common/decorators/rate-limit.decorator';
-import { CacheInterceptor } from '../../common/cache/cache.interceptor';
+// import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
 
 @Controller('users')
@@ -18,7 +18,7 @@ export class UsersController {
     constructor(private readonly users: UsersService) { }
 
     @Roles('OrgAdmin' as Role)
-    @UseInterceptors(CacheInterceptor)
+    // @UseInterceptors(CacheInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @Get()
@@ -27,7 +27,7 @@ export class UsersController {
     }
 
     @Roles('OrgAdmin' as Role, 'Editor' as Role)
-    @UseInterceptors(CacheInterceptor)
+    // @UseInterceptors(CacheInterceptor)
     @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @Get(':id')
