@@ -3,7 +3,8 @@ import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../../infra/services/prisma.service';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
-type Role = 'OrgAdmin' | 'Editor' | 'Viewer';
+import type { Role } from '../types/role';
+import { ROLE_HIERARCHY } from '../types/role';
 
 @Injectable()
 export class OrgAdminOnlyGuard implements CanActivate {
@@ -30,14 +31,13 @@ export class OrgAdminOnlyGuard implements CanActivate {
             throw new ForbiddenException('No organization memberships found');
         }
 
-        // Check if user has OrgAdmin role in at least one organization
-        const hasOrgAdminRole = memberships.some(membership =>
-            membership.role === 'OrgAdmin'
+        // Check if user has at least one membership with a role that meets the requirement
+        const needed = Math.max(...required.map((r) => ROLE_HIERARCHY[r]));
+        const hasRequiredRole = memberships.some(membership =>
+            ROLE_HIERARCHY[membership.role] >= needed
         );
 
-        if (!hasOrgAdminRole) {
-            throw new ForbiddenException('User must have OrgAdmin role in at least one organization to manage organizations');
-        }
+        if (!hasRequiredRole) throw new ForbiddenException('Insufficient role in any organization');
 
         return true;
     }

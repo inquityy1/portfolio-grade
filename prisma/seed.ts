@@ -1,8 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-type Role = 'OrgAdmin' | 'Editor' | 'Viewer';
-
 const prisma = new PrismaClient();
 
 async function main() {

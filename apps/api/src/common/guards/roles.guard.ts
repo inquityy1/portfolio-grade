@@ -2,15 +2,10 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, Forbi
 import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../../infra/services/prisma.service';
 import { ROLES_KEY } from '../decorators/roles.decorator';
-import type { Role } from '@prisma/client';
+import type { Role } from '../types/role';
+import { ROLE_HIERARCHY } from '../types/role';
 
 const HEADER = process.env.TENANT_HEADER || 'X-Org-Id';
-
-const roleRank: Record<Role, number> = {
-    OrgAdmin: 3,
-    Editor: 2,
-    Viewer: 1,
-};
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -41,10 +36,9 @@ export class RolesGuard implements CanActivate {
         }
 
         // hierarchical permission (OrgAdmin >= Editor >= Viewer)
-        const needed = Math.max(...required.map((r) => roleRank[r]));
-        const have = roleRank[membership.role];
+        const needed = Math.max(...required.map((r) => ROLE_HIERARCHY[r]));
+        const have = ROLE_HIERARCHY[membership.role];
         const ok = have >= needed;
-
 
         if (!ok) throw new ForbiddenException('Insufficient role');
         return true;

@@ -2,7 +2,7 @@ import { Controller, Post, UseGuards, UseInterceptors, Get, Param } from '@nestj
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import type { Role } from '@prisma/client';
+import type { Role } from '../../common/types/role';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { OrgId } from '../../common/decorators/org.decorator';
 import { TagStatsProcessor } from '../../infra/jobs/processors/tag-stats.processor';

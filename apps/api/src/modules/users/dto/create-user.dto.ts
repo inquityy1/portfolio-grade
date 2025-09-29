@@ -1,5 +1,5 @@
 import { IsEmail, IsString, MinLength, IsEnum, IsOptional } from 'class-validator';
-type Role = 'OrgAdmin' | 'Editor' | 'Viewer';
+import type { Role } from '../../common/types/role';
 
 export class CreateUserDto {
     @IsEmail()

@@ -9,7 +9,7 @@ function api(path: string) {
     return /\/api$/.test(B) ? `${B}${path}` : `${B}/api${path}`;
 }
 
-type Role = 'OrgAdmin' | 'Editor' | 'Viewer';
+import type { Role } from '@portfolio-grade/shared';
 
 interface Organization {
     id: string;
