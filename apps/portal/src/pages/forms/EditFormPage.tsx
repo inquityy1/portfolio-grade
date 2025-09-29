@@ -94,7 +94,7 @@ export default function EditFormPage() {
                 schema: parsedSchema,
             }, { headers });
 
-            nav('/', { replace: true, state: { flash: `Form "${data.name}" updated successfully! ✅` } });
+            nav('/forms', { replace: true, state: { flash: `Form "${data.name}" updated successfully! ✅` } });
         } catch (e: any) {
             const s = e?.response?.status;
             if (s === 401 || s === 403) {
@@ -159,12 +159,12 @@ export default function EditFormPage() {
                 <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
                     <Button
                         type="button"
-                        onClick={() => nav('/', { replace: true })}
+                        onClick={() => nav('/forms', { replace: true })}
                         disabled={submitting}
                     >
                         Cancel
                     </Button>
-                    <Button type="submit" disabled={submitting || !name.trim()}>
+                    <Button type="submit" disabled={submitting || !name.trim()} >
                         {submitting ? 'Updating...' : 'Update Form'}
                     </Button>
                 </div>

@@ -62,7 +62,7 @@ export default function CreateFormPage() {
                 schema: parsedSchema,
             }, { headers });
 
-            nav('/', { replace: true, state: { flash: `Form "${data.name}" created successfully! ✅` } });
+            nav('/forms', { replace: true, state: { flash: `Form "${data.name}" created successfully! ✅` } });
         } catch (e: any) {
             const s = e?.response?.status;
             if (s === 401 || s === 403) {

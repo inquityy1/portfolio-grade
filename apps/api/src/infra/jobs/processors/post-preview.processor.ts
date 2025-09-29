@@ -26,7 +26,7 @@ export class PostPreviewProcessor implements OnModuleInit {
     }
 
     async enqueue(orgId: string, postId: string) {
-        await this.queues.add<PostPreviewJob>(QUEUE_POST_PREVIEW, 'generate', { orgId, postId });
+        return await this.queues.add<PostPreviewJob>(QUEUE_POST_PREVIEW, 'generate', { orgId, postId });
     }
 
     private async generate(orgId: string, postId: string) {

@@ -10,6 +10,7 @@ import { FieldsModule } from '../modules/fields/fields.module';
 import { SubmissionsModule } from '../modules/submissions/submissions.module';
 import { RedisService } from '../infra/services/redis.service';
 import { AdminJobsModule } from '../modules/admin-jobs/admin-jobs.module';
+import { OrganizationsModule } from '../modules/organizations/organizations.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { AdminJobsModule } from '../modules/admin-jobs/admin-jobs.module';
     FormsModule,
     FieldsModule,
     SubmissionsModule,
-    AdminJobsModule
+    AdminJobsModule,
+    OrganizationsModule
   ],
   providers: [RedisService],
   exports: [RedisService],

@@ -20,7 +20,7 @@ export class PostsController {
 
     @Roles('Viewer' as Role)
     // @UseInterceptors(CacheInterceptor)
-    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @RateLimit({ perUser: { limit: 30, windowSec: 60 }, perOrg: { limit: 300, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @Get()
     list(
@@ -29,18 +29,20 @@ export class PostsController {
         @Query('cursor') cursor?: string,
         @Query('q') q?: string,
         @Query('tagId') tagId?: string,
+        @Query('includeFileAssets') includeFileAssets?: string,
     ) {
         return this.posts.list(orgId, {
             limit: limit ? Number(limit) : undefined,
             cursor: cursor ?? null,
             q: q ?? null,
             tagId: tagId ?? null,
+            includeFileAssets: includeFileAssets === 'true',
         });
     }
 
     @Roles('Viewer' as Role)
     // @UseInterceptors(CacheInterceptor)
-    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @RateLimit({ perUser: { limit: 30, windowSec: 60 }, perOrg: { limit: 300, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @Get(':id')
     getOne(@OrgId() orgId: string, @Param('id') id: string) {
@@ -50,7 +52,7 @@ export class PostsController {
     // Create / update / delete
     @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
-    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @RateLimit({ perUser: { limit: 30, windowSec: 60 }, perOrg: { limit: 300, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @HttpPost()
     create(@OrgId() orgId: string, @Req() req: any, @Body() dto: CreatePostDto) {
@@ -60,7 +62,7 @@ export class PostsController {
 
     @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
-    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @RateLimit({ perUser: { limit: 30, windowSec: 60 }, perOrg: { limit: 300, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @Patch(':id')
     update(@OrgId() orgId: string, @Req() req: any, @Param('id') id: string, @Body() dto: UpdatePostDto) {
@@ -70,7 +72,7 @@ export class PostsController {
 
     @Roles('Editor' as Role)
     @UseInterceptors(IdempotencyInterceptor)
-    @RateLimit({ perUser: { limit: 10, windowSec: 60 }, perOrg: { limit: 100, windowSec: 60 } })
+    @RateLimit({ perUser: { limit: 30, windowSec: 60 }, perOrg: { limit: 300, windowSec: 60 } })
     @UseGuards(RateLimitGuard)
     @Delete(':id')
     remove(@OrgId() orgId: string, @Param('id') id: string, @Req() req: any,) {

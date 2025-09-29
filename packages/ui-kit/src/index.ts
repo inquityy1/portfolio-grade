@@ -11,3 +11,4 @@ export * from './lib/fields/Field';
 export * from './lib/cards/Card';
 export * from './lib/containers/Container';
 export * from './lib/alerts/Alert';
+export * from './lib/tables/Table';

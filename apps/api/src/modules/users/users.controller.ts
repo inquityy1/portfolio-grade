@@ -1,12 +1,13 @@
-import { Controller, Get, Param, UseGuards, Patch, Body, Delete, UseInterceptors, Req } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Patch, Body, Delete, UseInterceptors, Req, Post } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import type { Role } from '@prisma/client';
+type Role = 'OrgAdmin' | 'Editor' | 'Viewer';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { OrgId } from '../../common/decorators/org.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
 import { RateLimit } from '../../common/decorators/rate-limit.decorator';
 // import { CacheInterceptor } from '../../common/cache/cache.interceptor';
@@ -24,6 +25,15 @@ export class UsersController {
     @Get()
     getAll(@OrgId() orgId: string) {
         return this.users.findAllByOrg(orgId);
+    }
+
+    @Roles('OrgAdmin' as Role)
+    @UseInterceptors(IdempotencyInterceptor)
+    @RateLimit({ perUser: { limit: 5, windowSec: 60 }, perOrg: { limit: 50, windowSec: 60 } })
+    @UseGuards(RateLimitGuard)
+    @Post()
+    create(@OrgId() orgId: string, @Body() dto: CreateUserDto) {
+        return this.users.createUserWithMembership(orgId, dto);
     }
 
     @Roles('Editor' as Role)

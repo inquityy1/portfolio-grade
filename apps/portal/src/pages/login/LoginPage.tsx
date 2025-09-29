@@ -51,14 +51,10 @@ export default function LoginPage() {
             if (orgId) {
                 dispatch(setOrg(orgId));
                 localStorage.setItem('orgId', orgId);
-            } else {
-                // optional: you could redirect to an org-picker if multi-tenant
-                // for now just stay logged in without org (protected pages will complain)
             }
 
             navigate('/', { replace: true });
         } catch (err) {
-            console.error(err);
             alert('Login failed');
         }
     }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import axios from 'axios';
-import { Button, Field, Label, Textarea, Input } from '@portfolio-grade/ui-kit';
+import { Button, Field, Label, Textarea, Input, Select } from '@portfolio-grade/ui-kit';
 import Modal from '../../components/common/Modal';
 
 // ---------- shared helpers ----------
@@ -68,6 +68,11 @@ type Comment = {
     createdAt?: string | null;
 };
 
+type Tag = {
+    id: string;
+    name: string;
+};
+
 export default function PostsPage() {
     const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || null;
 
@@ -77,6 +82,10 @@ export default function PostsPage() {
 
     const [posts, setPosts] = useState<Post[] | null>(null);
     const [error, setError] = useState<string | null>(null);
+
+    // tag filter state
+    const [tags, setTags] = useState<Tag[]>([]);
+    const [selectedTagId, setSelectedTagId] = useState<string>('');
 
     // comments state
     const [comments, setComments] = useState<Record<string, Comment[] | null>>({});
@@ -107,16 +116,36 @@ export default function PostsPage() {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [saving, setSaving] = useState(false);
+    const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
     // Request deduplication for /auth/me
     const userRequestRef = useRef<AbortController | null>(null);
+
+    // ----- Load tags -----
+    async function loadTags() {
+        try {
+            const { data } = await axios.get(`${apiBase()}/tags`, { headers: authHeaders() });
+            const arr = Array.isArray(data) ? data : [];
+            const mapped: Tag[] = arr.map((t: any) => ({
+                id: String(t.id),
+                name: String(t.name),
+            }));
+            setTags(mapped);
+        } catch (e: any) {
+            console.error('Failed to load tags:', e);
+            setTags([]);
+        }
+    }
 
     // ----- Load posts -----
     async function loadPosts() {
         try {
             setError(null);
             setPosts(null);
-            const { data } = await axios.get(`${apiBase()}/posts`, { headers: authHeaders() });
+            const url = selectedTagId
+                ? `${apiBase()}/posts?tagId=${selectedTagId}`
+                : `${apiBase()}/posts`;
+            const { data } = await axios.get(url, { headers: authHeaders() });
             const arr = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
             const mapped: Post[] = arr.map((p: any) => ({
                 id: String(p.id),
@@ -136,7 +165,15 @@ export default function PostsPage() {
             setError(e?.response?.data?.message || e.message || 'Failed to load posts');
         }
     }
-    useEffect(() => { loadPosts(); }, []);
+    useEffect(() => {
+        loadTags();
+        loadPosts();
+    }, []);
+
+    // Reload posts when tag filter changes
+    useEffect(() => {
+        loadPosts();
+    }, [selectedTagId]);
 
     // ----- Fetch user (roles + id) -----
     useEffect(() => {
@@ -344,6 +381,7 @@ export default function PostsPage() {
     function openCreate() {
         setTitle('');
         setContent('');
+        setSelectedTagIds([]);
         setEditing(null);
         setCreateOpen(true);
     }
@@ -360,7 +398,7 @@ export default function PostsPage() {
             setSaving(true);
             await axios.post(
                 `${apiBase()}/posts`,
-                { title, content },
+                { title, content, tagIds: selectedTagIds },
                 { headers: { ...authHeaders(), 'Content-Type': 'application/json', 'Idempotency-Key': idem('post:create') } }
             );
             setCreateOpen(false);
@@ -403,12 +441,30 @@ export default function PostsPage() {
         <section style={{ padding: 24, maxWidth: 800, margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <h1 style={{ margin: 0 }}>Posts</h1>
-                {canEditPosts && (
-                    <div style={{ display: 'flex', gap: 8 }}>
-                        <Button onClick={openRestore}>Restore comment</Button>
-                        <Button onClick={openCreate}>Create new post</Button>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Label style={{ margin: 0, fontSize: 14 }}>Filter</Label>
+                        <Select
+                            value={selectedTagId}
+                            onChange={(e) => setSelectedTagId(e.target.value)}
+                            style={{ minWidth: 150 }}
+                        >
+                            <option value="">All posts</option>
+                            {tags.map((tag) => (
+                                <option key={tag.id} value={tag.id}>
+                                    {tag.name}
+                                </option>
+                            ))}
+                        </Select>
                     </div>
-                )}
+
+                    {canEditPosts && (
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            <Button onClick={openRestore}>Restore comment</Button>
+                            <Button onClick={openCreate}>Create new post</Button>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {error && <div style={{ color: 'tomato', marginBottom: 12 }}>{error}</div>}
@@ -533,6 +589,29 @@ export default function PostsPage() {
                     <Field>
                         <Label>Content</Label>
                         <Textarea rows={8} value={content} onChange={(e: any) => setContent(e.target.value)} placeholder="Write your post…" />
+                    </Field>
+                    <Field>
+                        <Label>Tags (optional)</Label>
+                        <Select
+                            multiple
+                            value={selectedTagIds}
+                            onChange={(e: any) => {
+                                const values = Array.from(e.target.selectedOptions, (option: any) => option.value);
+                                setSelectedTagIds(values);
+                            }}
+                            style={{ minHeight: 100 }}
+                        >
+                            {tags.map((tag) => (
+                                <option key={tag.id} value={tag.id}>
+                                    {tag.name}
+                                </option>
+                            ))}
+                        </Select>
+                        {selectedTagIds.length > 0 && (
+                            <div style={{ marginTop: 8, fontSize: 12, opacity: 0.7 }}>
+                                Selected: {selectedTagIds.map(id => tags.find(t => t.id === id)?.name).join(', ')}
+                            </div>
+                        )}
                     </Field>
                 </form>
             </Modal>

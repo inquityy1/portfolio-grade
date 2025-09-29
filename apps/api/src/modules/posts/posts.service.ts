@@ -27,7 +27,7 @@ export class PostsService {
 
     async list(
         orgId: string,
-        opts: { limit?: number; cursor?: string | null; q?: string | null; tagId?: string | null } = {}
+        opts: { limit?: number; cursor?: string | null; q?: string | null; tagId?: string | null; includeFileAssets?: boolean } = {}
     ) {
         const take = Math.min(Math.max(opts.limit ?? 10, 1), 50);
 
@@ -42,27 +42,34 @@ export class PostsService {
             where.postTags = { some: { tagId: opts.tagId } };
         }
 
+        const selectFields: any = {
+            id: true,
+            title: true,
+            content: true,
+            version: true,
+            createdAt: true,
+            updatedAt: true,
+            author: { select: { name: true } },
+            postTags: { select: { tag: { select: { id: true, name: true } } } },
+        };
+
+        // Include file assets if requested (for admin jobs)
+        if (opts.includeFileAssets) {
+            selectFields.files = { select: { id: true, url: true, mimeType: true } };
+        }
+
         const items = await this.prisma.post.findMany({
             where,
             take: take + 1,
             ...(opts.cursor ? { cursor: { id: opts.cursor }, skip: 1 } : {}),
             orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-            select: {
-                id: true,
-                title: true,
-                content: true,
-                version: true,
-                createdAt: true,
-                updatedAt: true,
-                author: { select: { name: true } },
-                postTags: { select: { tag: { select: { id: true, name: true } } } },
-            },
+            select: selectFields,
         });
 
         let nextCursor: string | null = null;
         if (items.length > take) {
             const next = items.pop()!;
-            nextCursor = next.id;
+            nextCursor = (next as any).id;
         }
 
         return { items, nextCursor };
@@ -107,6 +114,16 @@ export class PostsService {
                 include: { postTags: { include: { tag: true } }, revisions: true },
             });
 
+            // Update tag counts immediately when creating a post
+            if (tagIds.length) {
+                for (const tagId of tagIds) {
+                    await tx.tagAggregate.upsert({
+                        where: { organizationId_tagId: { organizationId: orgId, tagId } },
+                        update: { count: { increment: 1 }, calculatedAt: new Date() },
+                        create: { organizationId: orgId, tagId, count: 1 },
+                    });
+                }
+            }
 
             await tx.auditLog.create({
                 data: {
@@ -172,8 +189,38 @@ export class PostsService {
                 const count = await tx.tag.count({ where: { id: { in: tagIds }, organizationId: orgId } });
                 if (count !== tagIds.length) throw new ForbiddenException('One or more tags do not belong to this organization');
 
+                // Get current tags for this post
+                const currentTags = await tx.postTag.findMany({ where: { postId: id }, select: { tagId: true } });
+                const currentTagIds = currentTags.map(pt => pt.tagId);
+
+                // Find tags to add and remove
+                const tagsToAdd = tagIds.filter(tagId => !currentTagIds.includes(tagId));
+                const tagsToRemove = currentTagIds.filter(tagId => !tagIds.includes(tagId));
+
+                // Update post tags
                 await tx.postTag.deleteMany({ where: { postId: id } });
                 await tx.postTag.createMany({ data: tagIds.map((tagId) => ({ postId: id, tagId })) });
+
+                // Update tag counts
+                // Increment counts for newly added tags
+                for (const tagId of tagsToAdd) {
+                    await tx.tagAggregate.upsert({
+                        where: { organizationId_tagId: { organizationId: orgId, tagId } },
+                        update: { count: { increment: 1 }, calculatedAt: new Date() },
+                        create: { organizationId: orgId, tagId, count: 1 },
+                    });
+                }
+
+                // Decrement counts for removed tags
+                for (const tagId of tagsToRemove) {
+                    await tx.tagAggregate.updateMany({
+                        where: {
+                            organizationId: orgId,
+                            tagId: tagId
+                        },
+                        data: { count: { decrement: 1 }, calculatedAt: new Date() },
+                    });
+                }
             }
 
             if (dto.content) {
@@ -210,7 +257,10 @@ export class PostsService {
     async remove(orgId: string, id: string, userId: string) {
         return this.prisma.$transaction(async (tx) => {
             const [existing, membership] = await Promise.all([
-                tx.post.findFirst({ where: { id, organizationId: orgId }, select: { id: true, authorId: true } }),
+                tx.post.findFirst({
+                    where: { id, organizationId: orgId },
+                    include: { postTags: { select: { tagId: true } } }
+                }),
                 tx.membership.findUnique({
                     where: { organizationId_userId: { organizationId: orgId, userId } },
                     select: { role: true },
@@ -225,6 +275,19 @@ export class PostsService {
             const isAuthor = existing.authorId === userId;
             if (!isAdmin && !isEditor && !isAuthor) {
                 throw new ForbiddenException('Only the author, Editor, or OrgAdmin can delete this post');
+            }
+
+            // Decrement tag counts before deleting the post
+            if (existing.postTags.length > 0) {
+                for (const postTag of existing.postTags) {
+                    await tx.tagAggregate.updateMany({
+                        where: {
+                            organizationId: orgId,
+                            tagId: postTag.tagId
+                        },
+                        data: { count: { decrement: 1 }, calculatedAt: new Date() },
+                    });
+                }
             }
 
             await tx.post.delete({ where: { id } });
