@@ -6,7 +6,7 @@ import {
     BadRequestException,
 } from '@nestjs/common';
 import { Observable, from, of, tap, switchMap } from 'rxjs';
-import { PrismaService } from 'apps/api/src/infra/services/prisma.service';
+import { PrismaService } from '../../../infra/services/prisma.service';
 import * as crypto from 'crypto';
 
 function bodyHash(payload: any) {

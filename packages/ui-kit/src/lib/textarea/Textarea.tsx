@@ -10,7 +10,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttrib
         padding: '12px',
         borderRadius: '4px',
         border: '1px solid #ccc',
-        background: 'white',
+        background: '#161a23',
         color: 'black',
         outline: 'none',
         resize: 'vertical',

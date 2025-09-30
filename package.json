@@ -12,7 +12,12 @@
     "admin:e2e:test": "npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium",
     "admin:e2e:test:headed": "set HEADED=true && npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium --headed",
     "portal:e2e:test": "npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium",
-    "portal:e2e:test:headed": "set HEADED=true && npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium --headed"
+    "portal:e2e:test:headed": "set HEADED=true && npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium --headed",
+    "test": "nx run-many --target=test --all",
+    "test:api": "nx test api",
+    "test:admin": "nx test admin",
+    "test:portal": "nx test portal",
+    "storybook": "nx storybook ui-kit"
   },
   "private": true,
   "dependencies": {
