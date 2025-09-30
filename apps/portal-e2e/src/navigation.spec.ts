@@ -13,7 +13,22 @@ test.describe('Portal Navigation and Layout', () => {
 
     test('should display home page after login', async () => {
         await helpers.expectOnHomePage();
-        // The home page just shows "hello app" text, no h1 element needed
+        await expect(helpers.page.locator('h1')).toContainText('Portal Dashboard');
+        await expect(helpers.page.locator('p')).toContainText('Welcome to the Portal');
+    });
+
+    test('should display dashboard navigation links', async () => {
+        await helpers.expectOnHomePage();
+        
+        // Check that navigation links are present in the main content (not header)
+        await expect(helpers.page.locator('main a[href="/forms"]')).toBeVisible();
+        await expect(helpers.page.locator('main a[href="/posts"]')).toBeVisible();
+        await expect(helpers.page.locator('main a[href="/admin"]')).toBeVisible();
+        
+        // Check that links have descriptive text
+        await expect(helpers.page.locator('main a[href="/forms"]')).toContainText('Forms');
+        await expect(helpers.page.locator('main a[href="/posts"]')).toContainText('Posts');
+        await expect(helpers.page.locator('main a[href="/admin"]')).toContainText('Admin');
     });
 
     test('should have working navigation between pages', async () => {

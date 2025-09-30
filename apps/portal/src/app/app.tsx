@@ -1,3 +1,5 @@
+import PortalDashboard from '../pages/dashboard/PortalDashboard';
+
 export default function App() {
-  return <div>hello app</div>;
+  return <PortalDashboard />;
 }

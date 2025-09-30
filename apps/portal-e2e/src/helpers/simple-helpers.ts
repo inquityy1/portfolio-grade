@@ -26,8 +26,7 @@ export class SimpleTestHelpers {
 
     async expectOnHomePage() {
         await expect(this.page).toHaveURL('/');
-        // Just check that we're on the home page by URL, the content might vary
-        await expect(this.page.locator('body')).toContainText('hello app');
+        await expect(this.page.locator('h1')).toContainText('Portal Dashboard');
     }
 
     async expectRedirectToLogin() {

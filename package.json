@@ -7,14 +7,12 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "prisma:seed": "ts-node --project tsconfig.scripts.json prisma/seed.ts",
+    "e2e:test": "npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium && npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium",
+    "e2e:test:headed": "set HEADED=true && npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium --headed && set HEADED=true && npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium --headed",
     "admin:e2e:test": "npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium",
     "admin:e2e:test:headed": "set HEADED=true && npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium --headed",
-    "admin:e2e:test:debug": "npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium --debug",
-    "admin:e2e:report": "npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium --reporter=html",
     "portal:e2e:test": "npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium",
-    "portal:e2e:test:headed": "set HEADED=true && npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium --headed",
-    "portal:e2e:test:debug": "npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium --debug",
-    "portal:e2e:report": "npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium --reporter=html"
+    "portal:e2e:test:headed": "set HEADED=true && npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium --headed"
   },
   "private": true,
   "dependencies": {
