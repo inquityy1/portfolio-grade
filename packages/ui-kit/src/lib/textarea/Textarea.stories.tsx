@@ -59,7 +59,7 @@ export const LargeTextarea: Story = {
 export const SmallTextarea: Story = {
     args: {
         placeholder: 'Short message',
-        rows: 2,
+        rows: 1,
     },
 };
 

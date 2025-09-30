@@ -1,22 +1,32 @@
-import styled from 'styled-components';
-import { forwardRef } from 'react';
-
-const StyledTextarea = styled.textarea<React.TextareaHTMLAttributes<HTMLTextAreaElement>>`
-  width: 90%;
-  padding: ${({ theme }) => `${theme.spacing(3)} ${theme.spacing(3)}`};
-  border-radius: ${({ theme }) => theme.radius.md};
-  border: 1px solid ${({ theme }) => theme.colors.border};
-  background: ${({ theme }) => theme.colors.surface};
-  color: ${({ theme }) => theme.colors.text};
-  outline: none;
-  resize: vertical;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 2px rgba(88,101,242,0.25);
-  }
-`;
+import React, { forwardRef } from 'react';
 
 export const Textarea = forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
-  (props, ref) => <StyledTextarea {...props} ref={ref} />
+  (props, ref) => (
+    <textarea
+      {...props}
+      ref={ref}
+      style={{
+        width: '90%',
+        padding: '12px',
+        borderRadius: '4px',
+        border: '1px solid #ccc',
+        background: 'white',
+        color: 'black',
+        outline: 'none',
+        resize: 'vertical',
+        fontFamily: 'inherit',
+        ...props.style
+      }}
+      onFocus={(e) => {
+        e.target.style.borderColor = '#4CAF50';
+        e.target.style.boxShadow = '0 0 0 2px rgba(76,175,80,0.25)';
+        props.onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        e.target.style.borderColor = '#ccc';
+        e.target.style.boxShadow = 'none';
+        props.onBlur?.(e);
+      }}
+    />
+  )
 );

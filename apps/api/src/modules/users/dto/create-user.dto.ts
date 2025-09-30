@@ -1,5 +1,5 @@
 import { IsEmail, IsString, MinLength, IsEnum, IsOptional } from 'class-validator';
-import type { Role } from '../../common/types/role';
+import type { Role } from '@portfolio-grade/shared';
 
 export class CreateUserDto {
     @IsEmail()

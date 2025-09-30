@@ -27,7 +27,7 @@ export function Table<T = any>({
     emptyMessage = 'No data found',
     className = '',
     style = {},
-    rowKey = 'id',
+    rowKey = 'id' as keyof T,
     onRowClick,
     theme = 'light'
 }: TableProps<T>) {
@@ -105,8 +105,8 @@ export function Table<T = any>({
                                     }}
                                 >
                                     {column.render
-                                        ? column.render(item[column.key], item)
-                                        : String(item[column.key] || '')
+                                        ? column.render((item as any)[column.key], item)
+                                        : String((item as any)[column.key] || '')
                                     }
                                 </td>
                             ))}
