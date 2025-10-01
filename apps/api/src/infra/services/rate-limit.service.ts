@@ -20,18 +20,30 @@ export class RateLimitService {
         const client = this.redis.getClient();
         // Try Redis path
         if (client?.status === 'ready') {
-            const now = Math.floor(Date.now() / 1000);
-            const bucketKey = `rate:${key}:${Math.floor(now / windowSec)}`; // fixed window shard
+            try {
+                const now = Math.floor(Date.now() / 1000);
+                const bucketKey = `rate:${key}:${Math.floor(now / windowSec)}`; // fixed window shard
 
-            const multi = client.multi();
-            multi.incr(bucketKey);
-            multi.expire(bucketKey, windowSec, 'NX');
-            const [incrRes] = (await multi.exec()) as [number, unknown];
-            const count = typeof incrRes === 'number' ? incrRes : Number(incrRes);
+                const multi = client.multi();
+                multi.incr(bucketKey);
+                multi.expire(bucketKey, windowSec, 'NX');
+                const execResult = await multi.exec();
 
-            const remaining = Math.max(0, limit - count);
-            const resetSeconds = windowSec - (now % windowSec);
-            return { allowed: count <= limit, remaining, limit, resetSeconds };
+                if (!execResult || execResult.length === 0) {
+                    // Fallback to memory if exec returns null or empty
+                    throw new Error('Redis exec returned null or empty');
+                }
+
+                const [[incrRes]] = execResult as [[number, unknown], unknown];
+                const count = typeof incrRes === 'number' ? incrRes : Number(incrRes);
+
+                const remaining = Math.max(0, limit - count);
+                const resetSeconds = windowSec - (now % windowSec);
+                return { allowed: count <= limit, remaining, limit, resetSeconds };
+            } catch (error) {
+                // Fallback to memory on any Redis error
+                this.logger.debug(`Redis error, falling back to memory: ${error.message}`);
+            }
         }
 
         // Fallback: in-memory

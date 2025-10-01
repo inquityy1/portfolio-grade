@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TagStatsProcessor } from '../../../infra/jobs/processors/tag-stats.processor';
 import { QueueService } from '../../../infra/services/queue.service';
 import { PrismaService } from '../../../infra/services/prisma.service';
-import { Job } from 'bullmq';
 
 describe('TagStatsProcessor', () => {
   let processor: TagStatsProcessor;
@@ -172,7 +171,7 @@ describe('TagStatsProcessor', () => {
       ];
 
       mockPrismaService.postTag.groupBy.mockResolvedValue(mockTagCounts);
-      
+
       const mockUpsert = jest.fn().mockResolvedValue(undefined);
       mockPrismaService.$transaction.mockImplementation(async (callback) => {
         await callback({
@@ -201,7 +200,7 @@ describe('TagStatsProcessor', () => {
     it('should handle empty tag counts', async () => {
       const orgId = 'test-org-id';
       mockPrismaService.postTag.groupBy.mockResolvedValue([]);
-      
+
       const mockUpsert = jest.fn().mockResolvedValue(undefined);
       mockPrismaService.$transaction.mockImplementation(async (callback) => {
         await callback({
