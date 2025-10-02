@@ -280,7 +280,6 @@ describe('RedisService', () => {
                 expect(client.del).not.toHaveBeenCalled();
             });
 
-
             it('should handle stream errors gracefully', async () => {
                 const client = service.getClient();
                 const mockStream = {

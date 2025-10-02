@@ -113,15 +113,6 @@ export default function CreateOrganizationPage() {
                         >
                             {isSubmitting ? 'Creating...' : 'Create Organization'}
                         </Button>
-
-                        <Button
-                            type="button"
-                            onClick={() => window.history.back()}
-                            disabled={isSubmitting}
-                            style={{ backgroundColor: '#6c757d', color: 'white' }}
-                        >
-                            Cancel
-                        </Button>
                     </div>
                 </form>
             </div>
