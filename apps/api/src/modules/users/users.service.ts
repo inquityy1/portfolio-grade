@@ -38,9 +38,16 @@ export class UsersService {
     }
 
     async create(data: any) {
-        const user = await this.prisma.user.create({ data });
-        await this.outbox.publish('user.created', { id: user.id, name: data.name });
-        return user;
+        try {
+            const user = await this.prisma.user.create({ data });
+            await this.outbox.publish('user.created', { id: user.id, name: data.name });
+            return user;
+        } catch (error) {
+            if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+                throw new ConflictException('User with this email already exists');
+            }
+            throw error;
+        }
     }
 
     async createUserWithMembership(orgId: string, data: { email: string; password: string; name: string; role: Role; organizationId?: string }) {

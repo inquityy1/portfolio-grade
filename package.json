@@ -21,6 +21,8 @@
     "test:shared": "nx test shared",
     "test:ui-kit": "nx test ui-kit",
     "test:integration": "nx run api:test-integration",
+    "setup:test-db": "echo 'Please create test database manually in pgAdmin or run: createdb portfolio_grade_test'",
+    "migrate:test-db": "ts-node --project tsconfig.scripts.json scripts/migrate-test-schema.ts",
     "storybook": "nx storybook ui-kit"
   },
   "private": true,
@@ -94,6 +96,7 @@
     "@vitest/ui": "^3.0.0",
     "babel-jest": "^30.0.2",
     "babel-plugin-styled-components": "1.10.7",
+    "cross-env": "^10.1.0",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-import": "2.31.0",

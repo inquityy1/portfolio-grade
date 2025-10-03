@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
@@ -15,12 +15,19 @@ export class AuthService {
     ) { }
 
     async register(dto: RegisterDto) {
-        const hashedPassword = await bcrypt.hash(dto.password, 10);
-        return this.users.create({
-            email: dto.email,
-            password: hashedPassword,
-            name: dto.name,
-        });
+        try {
+            const hashedPassword = await bcrypt.hash(dto.password, 10);
+            return this.users.create({
+                email: dto.email,
+                password: hashedPassword,
+                name: dto.name,
+            });
+        } catch (error: any) {
+            if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+                throw new ConflictException('Email already exists');
+            }
+            throw error;
+        }
     }
 
     async login(dto: LoginDto) {
