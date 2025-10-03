@@ -5,7 +5,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { OrgId } from '../../common/decorators/org.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import type { Role } from '../../common/types/role';
+import type { Role } from '@portfolio-grade/shared';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody } from '@nestjs/swagger';

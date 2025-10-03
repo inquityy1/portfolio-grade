@@ -14,7 +14,13 @@ export default {
         '<rootDir>/src/**/*.test.ts',
         '<rootDir>/src/**/tests/**/*.test.ts',
     ],
-    moduleNameMapping: {
+    testPathIgnorePatterns: [
+        '<rootDir>/src/integration/',
+    ],
+    moduleNameMapper: {
         '^apps/api/src/(.*)$': '<rootDir>/src/$1',
+        '^@portfolio-grade/shared$': '<rootDir>/../../packages/shared/src/index.ts',
+        '^@portfolio-grade/shared/(.*)$': '<rootDir>/../../packages/shared/src/$1',
     },
+    setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
 };

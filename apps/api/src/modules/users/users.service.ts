@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { PrismaService } from '../../infra/services/prisma.service';
 import { OutboxService } from '../../infra/services/outbox.service';
 import * as bcrypt from 'bcrypt';
-import type { Role } from '../../common/types/role';
+import type { Role } from '@portfolio-grade/shared';
 
 @Injectable()
 export class UsersService {

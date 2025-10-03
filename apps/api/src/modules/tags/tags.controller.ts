@@ -4,7 +4,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { OrgId } from '../../common/decorators/org.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import type { Role } from '../../common/types/role';
+import type { Role } from '@portfolio-grade/shared';
 import { TagsService } from './tags.service';
 import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
 // import { CacheInterceptor } from '../../common/cache/cache.interceptor';

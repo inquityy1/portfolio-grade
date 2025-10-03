@@ -1,4 +1,3 @@
-export * from './lib/ui-kit';
 export * from './lib/themes/Theme';
 export * from './lib/buttons/Button';
 export { UIProvider } from './lib/themes/Theme';

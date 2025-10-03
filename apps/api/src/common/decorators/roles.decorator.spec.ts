@@ -1,6 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
 import { Roles, ROLES_KEY } from './roles.decorator';
-import type { Role } from '../types/role';
+import type { Role } from '@portfolio-grade/shared';
 
 // Mock SetMetadata to track calls
 jest.mock('@nestjs/common', () => ({

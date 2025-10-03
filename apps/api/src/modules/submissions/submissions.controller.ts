@@ -6,7 +6,7 @@ import { OrgId } from '../../common/decorators/org.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import type { Role } from '../../common/types/role';
+import type { Role } from '@portfolio-grade/shared';
 import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';
 // import { CacheInterceptor } from '../../common/cache/cache.interceptor';
 import { RateLimitGuard } from '../../common/guards/rate-limit.guard';

@@ -2,7 +2,7 @@ import { Controller, Post, UseGuards, UseInterceptors, Get, Param } from '@nestj
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import type { Role } from '../../common/types/role';
+import type { Role } from '@portfolio-grade/shared';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { OrgId } from '../../common/decorators/org.decorator';
 import { TagStatsProcessor } from '../../infra/jobs/processors/tag-stats.processor';
@@ -56,7 +56,7 @@ export class AdminJobsController {
     async getTagStats(@OrgId() orgId: string) {
         return this.prisma.tagAggregate.findMany({
             where: { organizationId: orgId },
-            orderBy: { count: 'desc' },
+            orderBy: { count: 'asc' },
         });
     }
 

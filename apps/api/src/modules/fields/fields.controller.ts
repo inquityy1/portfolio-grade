@@ -5,7 +5,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { OrgId } from '../../common/decorators/org.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import type { Role } from '../../common/types/role';
+import type { Role } from '@portfolio-grade/shared';
 import { CreateFieldDto } from './dto/create-field.dto';
 import { UpdateFieldDto } from './dto/update-field.dto';
 import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotency.interceptor';

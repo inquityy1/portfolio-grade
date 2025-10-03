@@ -8,7 +8,7 @@ import { RateLimit } from '../../common/decorators/rate-limit.decorator';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiBody } from '@nestjs/swagger';
 
-import type { Role } from '../../common/types/role';
+import type { Role } from '@portfolio-grade/shared';
 
 @ApiTags('Organizations')
 @ApiBearerAuth()

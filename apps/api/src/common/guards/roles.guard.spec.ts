@@ -4,7 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { RolesGuard } from './roles.guard';
 import { PrismaService } from '../../infra/services/prisma.service';
 import { ROLES_KEY } from '../decorators/roles.decorator';
-import { ROLE_HIERARCHY } from '../types/role';
+import { ROLE_HIERARCHY } from '@portfolio-grade/shared';
 
 // Mock the tenant header constant
 const HEADER = 'X-Org-Id';

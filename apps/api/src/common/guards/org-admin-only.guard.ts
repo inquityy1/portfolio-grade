@@ -3,8 +3,8 @@ import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../../infra/services/prisma.service';
 import { ROLES_KEY } from '../decorators/roles.decorator';
 
-import type { Role } from '../types/role';
-import { ROLE_HIERARCHY } from '../types/role';
+import type { Role } from '@portfolio-grade/shared';
+import { ROLE_HIERARCHY } from '@portfolio-grade/shared';
 
 @Injectable()
 export class OrgAdminOnlyGuard implements CanActivate {

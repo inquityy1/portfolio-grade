@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post as HttpPost, UseGuards, Req, Query, UseInterceptors } from '@nestjs/common';
-import type { Role } from '../../common/types/role';
+import type { Role } from '@portfolio-grade/shared';
 import { PostsService } from './posts.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';

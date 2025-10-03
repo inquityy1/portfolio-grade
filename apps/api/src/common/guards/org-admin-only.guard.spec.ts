@@ -4,7 +4,7 @@ import { Reflector } from '@nestjs/core';
 import { OrgAdminOnlyGuard } from './org-admin-only.guard';
 import { PrismaService } from '../../infra/services/prisma.service';
 import { ROLES_KEY } from '../decorators/roles.decorator';
-import { ROLE_HIERARCHY } from '../types/role';
+import { ROLE_HIERARCHY } from '@portfolio-grade/shared';
 
 describe('OrgAdminOnlyGuard', () => {
     let guard: OrgAdminOnlyGuard;

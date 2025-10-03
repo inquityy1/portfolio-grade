@@ -107,7 +107,7 @@ describe('AdminJobsController', () => {
             expect(result).toEqual(mockTagStats);
             expect(mockPrismaService.tagAggregate.findMany).toHaveBeenCalledWith({
                 where: { organizationId: orgId },
-                orderBy: { count: 'desc' },
+                orderBy: { count: 'asc' },
             });
         });
 
@@ -120,7 +120,7 @@ describe('AdminJobsController', () => {
             expect(result).toEqual([]);
             expect(mockPrismaService.tagAggregate.findMany).toHaveBeenCalledWith({
                 where: { organizationId: orgId },
-                orderBy: { count: 'desc' },
+                orderBy: { count: 'asc' },
             });
         });
     });
