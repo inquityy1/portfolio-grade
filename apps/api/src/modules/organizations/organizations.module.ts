@@ -7,9 +7,9 @@ import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
 import { OrgAdminOnlyGuard } from '../../common/guards/org-admin-only.guard';
 
 @Module({
-    imports: [InfraModule],
-    controllers: [OrganizationsController],
-    providers: [OrganizationsService, CacheInterceptor, RateLimitGuard, OrgAdminOnlyGuard],
-    exports: [OrganizationsService],
+  imports: [InfraModule],
+  controllers: [OrganizationsController],
+  providers: [OrganizationsService, CacheInterceptor, RateLimitGuard, OrgAdminOnlyGuard],
+  exports: [OrganizationsService],
 })
-export class OrganizationsModule { }
+export class OrganizationsModule {}

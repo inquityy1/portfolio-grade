@@ -83,7 +83,7 @@ export default [
       'eol-last': 'error',
       'no-trailing-spaces': 'error',
       'quotes': ['error', 'single', { avoidEscape: true }],
-      'indent': ['error', 4, { SwitchCase: 1 }], // Changed to 4 spaces to match existing code
+      'indent': ['error', 2, { SwitchCase: 1 }], // Changed to 2 spaces to match existing codebase
 
       // TypeScript Rules
       '@typescript-eslint/no-explicit-any': 'off', // Turn off any type warnings
