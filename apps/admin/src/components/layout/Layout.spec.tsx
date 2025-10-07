@@ -5,13 +5,13 @@ import Layout from './Layout';
 // Mock react-router-dom
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  Outlet: () => <div data-testid="outlet">Outlet Content</div>,
+  Outlet: () => <div data-testid='outlet'>Outlet Content</div>,
 }));
 
 // Mock the Header component
 jest.mock('../header/Header', () => {
   return function MockHeader() {
-    return <div data-testid="header">Header Component</div>;
+    return <div data-testid='header'>Header Component</div>;
   };
 });
 
@@ -20,7 +20,7 @@ describe('Layout', () => {
     const { getByTestId } = render(
       <BrowserRouter>
         <Layout />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     expect(getByTestId('header')).toBeInTheDocument();
@@ -31,7 +31,7 @@ describe('Layout', () => {
     const { getByTestId } = render(
       <BrowserRouter>
         <Layout />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     expect(getByTestId('outlet')).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe('Layout', () => {
     const { container } = render(
       <BrowserRouter>
         <Layout />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     const mainElement = container.querySelector('main');
@@ -54,7 +54,7 @@ describe('Layout', () => {
     const { container } = render(
       <BrowserRouter>
         <Layout />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     const wrapperDiv = container.firstChild;
@@ -66,7 +66,7 @@ describe('Layout', () => {
     const { container } = render(
       <BrowserRouter>
         <Layout />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     const wrapperDiv = container.firstChild;
@@ -82,7 +82,7 @@ describe('Layout', () => {
       render(
         <BrowserRouter>
           <Layout />
-        </BrowserRouter>
+        </BrowserRouter>,
       );
     }).not.toThrow();
   });

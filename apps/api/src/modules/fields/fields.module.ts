@@ -11,4 +11,4 @@ import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotenc
   providers: [FieldsService, CacheInterceptor, IdempotencyInterceptor],
   exports: [FieldsService],
 })
-export class FieldsModule { }
+export class FieldsModule {}

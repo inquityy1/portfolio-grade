@@ -12,7 +12,7 @@ const config: StorybookConfig = {
     options: {},
   },
 
-  viteFinal: async (config) =>
+  viteFinal: async config =>
     mergeConfig(config, {
       plugins: [react(), nxViteTsPaths()],
     }),

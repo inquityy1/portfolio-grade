@@ -23,4 +23,4 @@ import { InfraModule } from '../../infra/infra.module';
   providers: [AuthService, JwtStrategy, JwtAuthGuard, RolesGuard],
   exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

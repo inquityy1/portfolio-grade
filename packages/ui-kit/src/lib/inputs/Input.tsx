@@ -11,6 +11,6 @@ export const Input = styled.input<React.InputHTMLAttributes<HTMLInputElement>>`
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 2px rgba(88,101,242,0.25);
+    box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.25);
   }
 `;

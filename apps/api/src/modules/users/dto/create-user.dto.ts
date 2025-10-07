@@ -2,20 +2,20 @@ import { IsEmail, IsString, MinLength, IsEnum, IsOptional } from 'class-validato
 import type { Role } from '@portfolio-grade/shared';
 
 export class CreateUserDto {
-    @IsEmail()
-    email: string;
+  @IsEmail()
+  email: string;
 
-    @IsString()
-    @MinLength(6)
-    password: string;
+  @IsString()
+  @MinLength(6)
+  password: string;
 
-    @IsString()
-    name: string;
+  @IsString()
+  name: string;
 
-    @IsEnum(['OrgAdmin', 'Editor', 'Viewer'])
-    role: Role;
+  @IsEnum(['OrgAdmin', 'Editor', 'Viewer'])
+  role: Role;
 
-    @IsString()
-    @IsOptional()
-    organizationId?: string;
+  @IsString()
+  @IsOptional()
+  organizationId?: string;
 }

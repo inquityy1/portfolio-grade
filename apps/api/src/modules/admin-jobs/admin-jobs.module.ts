@@ -6,4 +6,4 @@ import { InfraModule } from '../../infra/infra.module';
   imports: [InfraModule],
   controllers: [AdminJobsController],
 })
-export class AdminJobsModule { }
+export class AdminJobsModule {}

@@ -7,12 +7,12 @@ process.env.NODE_ENV = 'test';
 // Suppress console output during tests (optional)
 const originalConsole = global.console;
 if (typeof globalThis !== 'undefined') {
-    globalThis.console = {
-        ...originalConsole,
-        log: () => { },
-        debug: () => { },
-        info: () => { },
-        warn: () => { },
-        error: originalConsole.error,
-    } as any;
+  globalThis.console = {
+    ...originalConsole,
+    log: () => {},
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: originalConsole.error,
+  } as any;
 }

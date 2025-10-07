@@ -11,4 +11,4 @@ import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotenc
   controllers: [CommentsController],
   exports: [CommentsService],
 })
-export class CommentsModule { }
+export class CommentsModule {}

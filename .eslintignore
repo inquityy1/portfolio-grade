@@ -1,0 +1,40 @@
+# Build outputs
+dist/
+**/dist/
+build/
+**/build/
+out/
+**/out/
+.next/
+**/.next/
+coverage/
+**/coverage/
+test-results/
+**/test-results/
+tmp/
+**/tmp/
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Generated files
+*.d.ts
+*.min.js
+*.bundle.js
+*.chunk.js
+
+# Specific directories
+prisma/migrations/
+scripts/
+storybook-static/
+playwright-report/
+playwright/.cache/
+
+# Apps dist
+apps/dist/
+packages/*/dist/
+
+# Cache files
+vite.config.*.timestamp*
+vitest.config.*.timestamp*

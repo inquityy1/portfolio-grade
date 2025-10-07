@@ -7,5 +7,7 @@ export const Button = styled.button<React.ButtonHTMLAttributes<HTMLButtonElement
   background: ${({ theme }) => theme.colors.surface};
   color: ${({ theme }) => theme.colors.text};
   cursor: pointer;
-  &:hover { border-color: ${({ theme }) => theme.colors.primary}; }
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
 `;

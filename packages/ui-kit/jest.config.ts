@@ -9,10 +9,7 @@ export default {
       {
         tsconfig: '<rootDir>/tsconfig.spec.json',
         babelConfig: {
-          presets: [
-            ['@babel/preset-env', { targets: { node: 'current' } }],
-            '@babel/preset-react',
-          ],
+          presets: [['@babel/preset-env', { targets: { node: 'current' } }], '@babel/preset-react'],
           plugins: ['babel-plugin-styled-components'],
         },
       },

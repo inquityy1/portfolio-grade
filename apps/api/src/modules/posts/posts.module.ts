@@ -12,4 +12,4 @@ import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
   controllers: [PostsController],
   exports: [PostsService],
 })
-export class PostsModule { }
+export class PostsModule {}

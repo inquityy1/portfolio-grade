@@ -14,6 +14,7 @@
     "portal:e2e:test": "npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium",
     "portal:e2e:test:headed": "set HEADED=true && npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium --headed",
     "test": "nx run-many --target=test --all",
+    "test:affected": "nx affected --target=test --base=HEAD~1",
     "test:api": "nx test api",
     "test:admin": "nx test admin",
     "test:portal": "nx test portal",
@@ -23,7 +24,17 @@
     "test:integration": "nx run api:test-integration",
     "setup:test-db": "echo 'Please create test database manually in pgAdmin or run: createdb portfolio_grade_test'",
     "migrate:test-db": "ts-node --project tsconfig.scripts.json scripts/migrate-test-schema.ts",
-    "storybook": "nx storybook ui-kit"
+    "storybook": "nx storybook ui-kit",
+    "lint": "eslint apps packages prisma --ext .ts,.tsx",
+    "lint:fix": "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" npx eslint apps packages prisma --ext .ts,.tsx --fix",
+    "lint:fix:small": "eslint apps/api/src/main.ts --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "type-check": "nx run-many --target=type-check --all",
+    "build": "nx run-many --target=build --all",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged",
+    "quality-check": "npm run type-check && npm run lint && npm run format:check && npm run test"
   },
   "private": true,
   "dependencies": {
@@ -104,6 +115,7 @@
     "eslint-plugin-playwright": "^1.6.2",
     "eslint-plugin-react": "7.35.0",
     "eslint-plugin-react-hooks": "5.0.0",
+    "husky": "^9.1.7",
     "jest": "^30.0.2",
     "jest-environment-jsdom": "^30.0.2",
     "jest-environment-node": "^30.0.2",
@@ -111,6 +123,7 @@
     "jiti": "2.4.2",
     "jsdom": "~22.1.0",
     "jsonc-eslint-parser": "^2.1.0",
+    "lint-staged": "^15.2.10",
     "nx": "21.3.11",
     "prettier": "^2.6.2",
     "storybook": "9.1.8",
@@ -123,5 +136,14 @@
     "vite": "^6.0.0",
     "vitest": "^3.0.0",
     "webpack-cli": "^5.1.4"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }

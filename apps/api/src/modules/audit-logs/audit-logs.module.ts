@@ -10,4 +10,4 @@ import { IdempotencyInterceptor } from '../../common/http/idempotency/idempotenc
   controllers: [AuditLogsController],
   providers: [AuditLogsService, CacheInterceptor, IdempotencyInterceptor],
 })
-export class AuditLogsModule { }
+export class AuditLogsModule {}

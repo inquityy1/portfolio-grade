@@ -9,24 +9,24 @@ import { TagStatsProcessor } from './jobs/processors/tag-stats.processor';
 import { PostPreviewProcessor } from './jobs/processors/post-preview.processor';
 
 @Module({
-    providers: [
-        RedisService,
-        PrismaService,
-        OutboxService,
-        DispatcherService,
-        RateLimitService,
-        QueueService,
-        TagStatsProcessor,
-        PostPreviewProcessor
-    ],
-    exports: [
-        RedisService,
-        PrismaService,
-        OutboxService,
-        RateLimitService,
-        QueueService,
-        TagStatsProcessor,
-        PostPreviewProcessor
-    ],
+  providers: [
+    RedisService,
+    PrismaService,
+    OutboxService,
+    DispatcherService,
+    RateLimitService,
+    QueueService,
+    TagStatsProcessor,
+    PostPreviewProcessor,
+  ],
+  exports: [
+    RedisService,
+    PrismaService,
+    OutboxService,
+    RateLimitService,
+    QueueService,
+    TagStatsProcessor,
+    PostPreviewProcessor,
+  ],
 })
-export class InfraModule { }
+export class InfraModule {}

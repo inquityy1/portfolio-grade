@@ -113,7 +113,7 @@ describe('TagStatsProcessor', () => {
       ];
 
       mockPrismaService.postTag.groupBy.mockResolvedValue(mockTagCounts);
-      mockPrismaService.$transaction.mockImplementation(async (callback) => {
+      mockPrismaService.$transaction.mockImplementation(async callback => {
         await callback({
           tagAggregate: {
             upsert: jest.fn().mockResolvedValue(undefined),
@@ -137,7 +137,7 @@ describe('TagStatsProcessor', () => {
 
       mockPrismaService.organization.findMany.mockResolvedValue(mockOrgs);
       mockPrismaService.postTag.groupBy.mockResolvedValue(mockTagCounts);
-      mockPrismaService.$transaction.mockImplementation(async (callback) => {
+      mockPrismaService.$transaction.mockImplementation(async callback => {
         await callback({
           tagAggregate: {
             upsert: jest.fn().mockResolvedValue(undefined),
@@ -173,7 +173,7 @@ describe('TagStatsProcessor', () => {
       mockPrismaService.postTag.groupBy.mockResolvedValue(mockTagCounts);
 
       const mockUpsert = jest.fn().mockResolvedValue(undefined);
-      mockPrismaService.$transaction.mockImplementation(async (callback) => {
+      mockPrismaService.$transaction.mockImplementation(async callback => {
         await callback({
           tagAggregate: {
             upsert: mockUpsert,
@@ -202,7 +202,7 @@ describe('TagStatsProcessor', () => {
       mockPrismaService.postTag.groupBy.mockResolvedValue([]);
 
       const mockUpsert = jest.fn().mockResolvedValue(undefined);
-      mockPrismaService.$transaction.mockImplementation(async (callback) => {
+      mockPrismaService.$transaction.mockImplementation(async callback => {
         await callback({
           tagAggregate: {
             upsert: mockUpsert,

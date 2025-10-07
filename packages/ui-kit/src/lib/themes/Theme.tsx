@@ -36,7 +36,7 @@ export const theme = {
     success: '#2e7d32',
     successBackground: '#e8f5e8',
     warning: '#f57c00',
-    warningBackground: '#fff3e0'
+    warningBackground: '#fff3e0',
   },
   radius: { md: '12px', lg: '16px' },
   spacing: (n: number) => `${n * 4}px`,
@@ -44,11 +44,12 @@ export const theme = {
 
 export const GlobalStyle = createGlobalStyle`
   html,body,#root{height:100%}
-  body{margin:0;background:${({ theme }) => theme.colors.bg};color:${({ theme }) => theme.colors.text}}
+  body{margin:0;background:${({ theme }) => theme.colors.bg};color:${({ theme }) =>
+  theme.colors.text}}
 `;
 
 export const UIProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
-  <ThemeProvider theme={theme} >
+  <ThemeProvider theme={theme}>
     <GlobalStyle />
     {children}
   </ThemeProvider>

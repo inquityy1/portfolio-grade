@@ -8,11 +8,11 @@ import ProtectedRoute from './ProtectedRoute';
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
   Navigate: ({ to, replace }: { to: string; replace: boolean }) => (
-    <div data-testid="navigate" data-to={to} data-replace={replace}>
+    <div data-testid='navigate' data-to={to} data-replace={replace}>
       Navigate to {to}
     </div>
   ),
-  Outlet: () => <div data-testid="outlet">Outlet Content</div>,
+  Outlet: () => <div data-testid='outlet'>Outlet Content</div>,
 }));
 
 // Mock the app-state module
@@ -39,7 +39,7 @@ describe('ProtectedRoute', () => {
         <BrowserRouter>
           <ProtectedRoute />
         </BrowserRouter>
-      </Provider>
+      </Provider>,
     );
   };
 

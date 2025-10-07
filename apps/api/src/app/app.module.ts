@@ -24,9 +24,9 @@ import { OrganizationsModule } from '../modules/organizations/organizations.modu
     FieldsModule,
     SubmissionsModule,
     AdminJobsModule,
-    OrganizationsModule
+    OrganizationsModule,
   ],
   providers: [RedisService],
   exports: [RedisService],
 })
-export class AppModule { }
+export class AppModule {}

@@ -84,7 +84,10 @@ describe('PostPreviewProcessor', () => {
       const result = await processor.enqueue(orgId, postId);
 
       expect(result).toEqual(mockJob);
-      expect(mockQueueService.add).toHaveBeenCalledWith('post-preview', 'generate', { orgId, postId });
+      expect(mockQueueService.add).toHaveBeenCalledWith('post-preview', 'generate', {
+        orgId,
+        postId,
+      });
     });
 
     it('should handle queue errors', async () => {
@@ -93,7 +96,10 @@ describe('PostPreviewProcessor', () => {
       mockQueueService.add.mockRejectedValue(new Error('Queue error'));
 
       await expect(processor.enqueue(orgId, postId)).rejects.toThrow('Queue error');
-      expect(mockQueueService.add).toHaveBeenCalledWith('post-preview', 'generate', { orgId, postId });
+      expect(mockQueueService.add).toHaveBeenCalledWith('post-preview', 'generate', {
+        orgId,
+        postId,
+      });
     });
   });
 

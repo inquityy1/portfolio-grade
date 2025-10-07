@@ -12,4 +12,4 @@ import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
   providers: [SubmissionsService, CacheInterceptor, IdempotencyInterceptor, RateLimitGuard],
   exports: [SubmissionsService],
 })
-export class SubmissionsModule { }
+export class SubmissionsModule {}

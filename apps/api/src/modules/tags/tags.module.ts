@@ -12,4 +12,4 @@ import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
   controllers: [TagsController],
   exports: [TagsService],
 })
-export class TagsModule { }
+export class TagsModule {}

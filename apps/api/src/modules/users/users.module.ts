@@ -12,4 +12,4 @@ import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
   providers: [UsersService, CacheInterceptor, IdempotencyInterceptor, RateLimitGuard],
   exports: [UsersService],
 })
-export class UsersModule { }
+export class UsersModule {}

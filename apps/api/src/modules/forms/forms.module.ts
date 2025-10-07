@@ -13,4 +13,4 @@ import { RateLimitGuard } from '../../common/guards/rate-limit.guard';
   providers: [FormsService, CacheInterceptor, IdempotencyInterceptor, RateLimitGuard],
   exports: [FormsService],
 })
-export class FormsModule { }
+export class FormsModule {}
