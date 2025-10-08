@@ -16,6 +16,7 @@ env:
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
   REDIS_URL: redis://localhost:6379
+  NX_CLOUD_DISTRIBUTED_EXECUTION: false
 
 jobs:
   # Job 1: Code Quality Checks
@@ -71,13 +72,6 @@ jobs:
       - name: Run unit tests with coverage
         run: npm run test:coverage
 
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
-          fail_ci_if_error: true
-
       - name: Upload coverage to GitHub
         uses: actions/upload-artifact@v4
         with:
@@ -132,8 +126,10 @@ jobs:
 
       - name: Setup test database
         run: |
-          createdb -h localhost -U ${{ env.POSTGRES_USER }} ${{ env.POSTGRES_DB }}
+          PGPASSWORD=${{ env.POSTGRES_PASSWORD }} createdb -h localhost -U ${{ env.POSTGRES_USER }} ${{ env.POSTGRES_DB }}
           npm run migrate:test-db
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
 
       - name: Run integration tests
         run: npm run test:integration
