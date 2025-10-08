@@ -28,3 +28,4 @@ export const CardFooter = styled.div<React.HTMLAttributes<HTMLDivElement>>`
   gap: ${({ theme }) => theme.spacing(2)};
   margin-top: ${({ theme }) => theme.spacing(3)};
 `;
+

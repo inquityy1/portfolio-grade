@@ -62,7 +62,3 @@ storybook-static/
 test-results/
 playwright-report/
 playwright/.cache/
-
-# NX Cache
-.nx/
-nx.json

@@ -19,11 +19,11 @@ export class RateLimitGuard implements CanActivate {
     const res = ctx.switchToHttp().getResponse();
 
     const cfg = this.reflector.get<RateLimitConfig>(RATE_LIMIT_KEY, ctx.getHandler()) ??
-      this.reflector.get<RateLimitConfig>(RATE_LIMIT_KEY, ctx.getClass()) ?? {
-        // defaults if nothing specified:
-        perUser: { limit: 60, windowSec: 10 },
-        perOrg: { limit: 600, windowSec: 60 },
-      };
+      this.reflector.get<RateLimitConfig>(
+        RATE_LIMIT_KEY,
+        ctx.getClass(),
+      ) ?? // defaults if nothing specified:
+      { perUser: { limit: 60, windowSec: 10 }, perOrg: { limit: 600, windowSec: 60 } };
 
     const orgId = (req.headers['x-org-id'] as string) || (req as any).orgId || 'no-org';
     const userId = (req as any).user?.userId || 'anon';

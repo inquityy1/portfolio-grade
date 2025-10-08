@@ -7,12 +7,16 @@
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/packages/ui-kit",
         "main": "packages/ui-kit/src/index.ts",
         "tsConfig": "packages/ui-kit/tsconfig.lib.json",
-        "assets": ["packages/ui-kit/*.md"]
+        "assets": [
+          "packages/ui-kit/*.md"
+        ]
       }
     }
   }
