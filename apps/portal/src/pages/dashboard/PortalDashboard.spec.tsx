@@ -50,7 +50,7 @@ describe('PortalDashboard', () => {
         <PortalDashboard />
       </BrowserRouter>,
     );
-    expect(screen.getByText('Available Functions:')).toBeInTheDocument();
+    expect(screen.getByText('Available Functions for Portal:')).toBeInTheDocument();
   });
 
   it('should render Forms link with correct path', () => {
@@ -179,7 +179,7 @@ describe('PortalDashboard', () => {
     const h3 = screen.getByRole('heading', { level: 3 });
 
     expect(h1).toHaveTextContent('Portal Dashboard');
-    expect(h3).toHaveTextContent('Available Functions:');
+    expect(h3).toHaveTextContent('Available Functions for Portal:');
   });
 
   it('should have proper spacing and layout', () => {
@@ -206,7 +206,7 @@ describe('PortalDashboard', () => {
         'Welcome to the Portal. Use the navigation above to access different portal functions.',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText('Available Functions:')).toBeInTheDocument();
+    expect(screen.getByText('Available Functions for Portal:')).toBeInTheDocument();
     expect(screen.getByText('Forms')).toBeInTheDocument();
     expect(screen.getByText('Posts')).toBeInTheDocument();
     expect(screen.getByText('Admin')).toBeInTheDocument();
@@ -253,7 +253,7 @@ describe('PortalDashboard', () => {
     const headings = screen.getAllByRole('heading');
     expect(headings).toHaveLength(2);
     expect(headings[0]).toHaveTextContent('Portal Dashboard');
-    expect(headings[1]).toHaveTextContent('Available Functions:');
+    expect(headings[1]).toHaveTextContent('Available Functions for Portal:');
 
     // Check for list structure
     const list = screen.getByRole('list');

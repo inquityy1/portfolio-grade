@@ -7,7 +7,7 @@ export default function PortalDashboard() {
       <h1>Portal Dashboard</h1>
       <p>Welcome to the Portal. Use the navigation above to access different portal functions.</p>
       <div style={{ marginTop: 24 }}>
-        <h3>Available Functions:</h3>
+        <h3>Available Functions for Portal:</h3>
         <ul>
           <li>
             <strong>
