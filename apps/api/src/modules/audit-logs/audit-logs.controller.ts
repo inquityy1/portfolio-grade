@@ -75,7 +75,7 @@ export class AuditLogsController {
       },
     },
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid or missing JWT token' })
+  // @ApiResponse({ status: 401, description: 'Unauthorized - Invalid or missing JWT token' })
   @ApiResponse({ status: 403, description: 'Forbidden - User does not have Editor or higher role' })
   @Roles('Editor' as Role)
   @Get()

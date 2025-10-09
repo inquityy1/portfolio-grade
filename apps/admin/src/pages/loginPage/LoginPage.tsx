@@ -7,7 +7,9 @@ import type { RootState } from '@portfolio-grade/app-state';
 import { Button, Label, Input, Field, Container, Alert } from '@portfolio-grade/ui-kit';
 
 function api(path: string) {
-  const B = String(import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+  const B =
+    String(import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '') ||
+    'http://localhost:3000';
   return /\/api$/.test(B) ? `${B}${path}` : `${B}/api${path}`;
 }
 
