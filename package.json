@@ -34,7 +34,21 @@
     "build": "nx run-many --target=build --all",
     "prepare": "husky install",
     "pre-commit": "lint-staged",
-    "quality-check": "npm run type-check && npm run lint && npm run format:check && npm run test"
+    "quality-check": "npm run type-check && npm run lint && npm run format:check && npm run test",
+    "test:all": "npm run test && npm run test:integration && npm run e2e:test",
+    "pre-commit:full": "npm run lint:fix && npm run format && npm run test:all",
+    "e2e:test:quick": "npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium --timeout=60000 && npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium --timeout=60000",
+    "docker:start": "docker-compose up -d",
+    "docker:stop": "docker-compose down",
+    "docker:restart": "docker-compose restart",
+    "docker:logs": "docker-compose logs -f",
+    "docker:build": "docker-compose build",
+    "docker:test": "docker-compose exec api npm run test:integration",
+    "docker:test:all": "docker-compose exec api npm run test:all",
+    "docker:e2e:admin": "docker-compose exec admin npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium",
+    "docker:e2e:portal": "docker-compose exec portal npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium",
+    "docker:e2e:all": "npm run docker:e2e:admin && npm run docker:e2e:portal",
+    "docker:clean": "docker-compose down -v && docker system prune -f"
   },
   "private": true,
   "dependencies": {

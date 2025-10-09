@@ -7,11 +7,11 @@ import {
 } from '@nestjs/common';
 import { Observable, from, of, tap, switchMap } from 'rxjs';
 import { PrismaService } from '../../../infra/services/prisma.service';
-import * as crypto from 'crypto';
+import { createHash } from 'crypto';
 
 function bodyHash(payload: any) {
   const json = typeof payload === 'string' ? payload : JSON.stringify(payload ?? {});
-  return crypto.createHash('sha256').update(json).digest('hex');
+  return createHash('sha256').update(json).digest('hex');
 }
 
 @Injectable()
@@ -42,7 +42,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
         select: { bodyHash: true, response: true },
       }),
     ).pipe(
-      switchMap(found => {
+      switchMap((found: { bodyHash: string; response: any } | null) => {
         if (found) {
           if (found.bodyHash === hash && found.response != null) {
             res.setHeader('X-Idempotency', 'HIT');
@@ -59,7 +59,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
             select: { id: true },
           }),
         ).pipe(
-          switchMap(created =>
+          switchMap((created: { id: string }) =>
             next.handle().pipe(
               tap(async data => {
                 try {

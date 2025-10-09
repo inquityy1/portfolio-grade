@@ -4,7 +4,10 @@ import axios from 'axios';
 import { Button, Input, Label, Field, Textarea, Container, Alert } from '@portfolio-grade/ui-kit';
 
 function api(path: string) {
-  const B = String(import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
+  // Use Docker internal API URL for e2e tests, otherwise use VITE_API_URL
+  const apiUrl =
+    import.meta.env.E2E_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const B = String(apiUrl).replace(/\/$/, '');
   return /\/api$/.test(B) ? `${B}${path}` : `${B}/api${path}`;
 }
 

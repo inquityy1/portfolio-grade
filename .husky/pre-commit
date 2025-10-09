@@ -6,3 +6,15 @@ npx lint-staged
 
 # Run tests for changed files
 npm run test:affected
+
+# Only run integration tests if API files changed
+if git diff --cached --name-only | grep -E "^(apps/api|packages)" > /dev/null; then
+  echo "API files changed, running integration tests..."
+  npm run test:integration
+fi
+
+# Only run e2e tests if frontend files changed
+if git diff --cached --name-only | grep -E "^(apps/(admin|portal)|packages)" > /dev/null; then
+  echo "Frontend files changed, running e2e tests..."
+  npm run e2e:test
+fi

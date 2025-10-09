@@ -12,7 +12,7 @@ import { JwtService } from '@nestjs/jwt';
 const TEST_DATABASE_URL =
   process.env.TEST_DATABASE_URL ||
   process.env.DATABASE_URL?.replace(/\/[^\/]+$/, '/portfolio_grade_test') ||
-  'postgresql://postgres@localhost:5432/portfolio_grade_test';
+  'postgresql://postgres:password@localhost:5432/portfolio_grade_test';
 
 export interface IntegrationTestContext {
   app: INestApplication;

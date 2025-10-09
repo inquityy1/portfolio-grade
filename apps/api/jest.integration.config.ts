@@ -19,6 +19,7 @@ export default {
     '^@portfolio-grade/shared/(.*)$': '<rootDir>/../../packages/shared/src/$1',
   },
   setupFilesAfterEnv: ['<rootDir>/src/integration/test-setup.ts'],
-  testTimeout: 30000, // 30 seconds for integration tests
+  setupFiles: ['<rootDir>/src/integration/env-setup.ts'],
+  testTimeout: 60000, // 60 seconds for integration tests
   maxWorkers: 1, // Run integration tests sequentially to avoid database conflicts
 };

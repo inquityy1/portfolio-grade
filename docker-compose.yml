@@ -1,0 +1,90 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: portfolio-grade-postgres
+    environment:
+      POSTGRES_DB: portfolio_grade
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: portfolio-grade-redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      args:
+        CACHE_BUST: ${CACHE_BUST:-1}
+    container_name: portfolio-grade-api
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/portfolio_grade?schema=public
+      TEST_DATABASE_URL: postgresql://postgres:password@postgres:5432/portfolio_grade_test?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: dev_access_secret_change_me
+      JWT_REFRESH_SECRET: dev_refresh_secret_change_me
+      JWT_ACCESS_TTL: 900s
+      JWT_REFRESH_TTL: 7d
+      TENANT_HEADER: X-Org-Id
+      NODE_ENV: development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3000/api
+    container_name: portfolio-grade-admin
+    ports:
+      - '4200:4200'
+    environment:
+      # Use localhost for browser access
+      VITE_API_URL: http://localhost:3000/api
+    depends_on:
+      - api
+
+  portal:
+    build:
+      context: .
+      dockerfile: apps/portal/Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3000/api
+    container_name: portfolio-grade-portal
+    ports:
+      - '4201:4201'
+    environment:
+      # Use localhost for browser access
+      VITE_API_URL: http://localhost:3000/api
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
