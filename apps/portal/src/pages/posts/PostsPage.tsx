@@ -163,9 +163,9 @@ export default function PostsPage() {
         version: p.version ?? 1,
         tags: Array.isArray(p.tags)
           ? p.tags.map((t: any) => ({
-              id: String(t.id ?? t.tagId ?? t.name),
-              name: String(t.name ?? t.tag?.name ?? ''),
-            }))
+            id: String(t.id ?? t.tagId ?? t.name),
+            name: String(t.name ?? t.tag?.name ?? ''),
+          }))
           : [],
       }));
       setPosts(mapped);
@@ -560,8 +560,8 @@ export default function PostsPage() {
                 {p.updatedAt
                   ? new Date(p.updatedAt).toLocaleString()
                   : p.createdAt
-                  ? new Date(p.createdAt).toLocaleString()
-                  : ''}
+                    ? new Date(p.createdAt).toLocaleString()
+                    : ''}
               </p>
               {p.tags && p.tags.length > 0 && (
                 <p style={{ margin: '6px 0 0', opacity: 0.7, fontSize: 12 }}>

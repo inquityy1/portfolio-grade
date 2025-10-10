@@ -3,9 +3,9 @@ import { IsObject, IsOptional, IsString } from 'class-validator';
 export class UpdateFormDto {
   @IsOptional()
   @IsString()
-  name?: string;
+    name?: string;
 
   @IsOptional()
   @IsObject()
-  schema?: Record<string, unknown>;
+    schema?: Record<string, unknown>;
 }

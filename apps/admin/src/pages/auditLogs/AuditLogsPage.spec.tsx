@@ -134,17 +134,17 @@ jest.mock('./AuditLogsPage', () => {
               backgroundColor: action.includes('CREATED')
                 ? '#d4edda'
                 : action.includes('UPDATED')
-                ? '#fff3cd'
-                : action.includes('DELETED')
-                ? '#f8d7da'
-                : '#e2e3e5',
+                  ? '#fff3cd'
+                  : action.includes('DELETED')
+                    ? '#f8d7da'
+                    : '#e2e3e5',
               color: action.includes('CREATED')
                 ? '#155724'
                 : action.includes('UPDATED')
-                ? '#856404'
-                : action.includes('DELETED')
-                ? '#721c24'
-                : '#383d41',
+                  ? '#856404'
+                  : action.includes('DELETED')
+                    ? '#721c24'
+                    : '#383d41',
             }}
           >
             {action.replace('_', ' ')}

@@ -8,5 +8,5 @@ export class CreateOrganizationDto {
     message:
       'Organization name can only contain letters, numbers, spaces, hyphens, and underscores',
   })
-  name: string;
+    name: string;
 }

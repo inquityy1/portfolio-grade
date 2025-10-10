@@ -313,8 +313,8 @@ jest.mock('./PostsPage', () => {
                   {p.updatedAt
                     ? new Date(p.updatedAt).toLocaleString()
                     : p.createdAt
-                    ? new Date(p.createdAt).toLocaleString()
-                    : ''}
+                      ? new Date(p.createdAt).toLocaleString()
+                      : ''}
                 </p>
                 {p.tags && p.tags.length > 0 && (
                   <p style={{ margin: '6px 0 0', opacity: 0.7, fontSize: 12 }}>

@@ -4,5 +4,5 @@ export class UpdateTagDto {
   @IsOptional()
   @IsString()
   @MinLength(2)
-  name?: string;
+    name?: string;
 }

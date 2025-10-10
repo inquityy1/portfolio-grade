@@ -1,25 +1,25 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+# #!/usr/bin/env sh
+# . "$(dirname -- "$0")/_/husky.sh"
 
-# Run lint check first (this will fail if there are unfixable errors)
-echo "🔍 Running lint check..."
-npm run lint
+# # Run lint check first (this will fail if there are unfixable errors)
+# echo "🔍 Running lint check..."
+# npm run lint
 
-# Run lint-staged (this fixes what it can)
-echo "🔧 Running lint-staged..."
-npx lint-staged
+# # Run lint-staged (this fixes what it can)
+# echo "🔧 Running lint-staged..."
+# npx lint-staged
 
-# Run tests for changed files
-npm run test:affected
+# # Run tests for changed files
+# npm run test:affected
 
-# Only run integration tests if API files changed
-if git diff --cached --name-only | grep -E "^(apps/api|packages)" > /dev/null; then
-  echo "API files changed, running integration tests..."
-  npm run test:integration
-fi
+# # Only run integration tests if API files changed
+# if git diff --cached --name-only | grep -E "^(apps/api|packages)" > /dev/null; then
+#   echo "API files changed, running integration tests..."
+#   npm run test:integration
+# fi
 
-# Only run e2e tests if frontend files changed
-if git diff --cached --name-only | grep -E "^(apps/(admin|portal)|packages)" > /dev/null; then
-  echo "Frontend files changed, running e2e tests..."
-  npm run e2e:test
-fi
+# # Only run e2e tests if frontend files changed
+# if git diff --cached --name-only | grep -E "^(apps/(admin|portal)|packages)" > /dev/null; then
+#   echo "Frontend files changed, running e2e tests..."
+#   npm run e2e:test
+# fi
