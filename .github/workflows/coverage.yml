@@ -77,8 +77,18 @@ jobs:
       - name: Check unit test coverage
         run: |
           echo "Checking unit test coverage..."
+
+          # Find coverage summary file
+          COVERAGE_FILE=$(find coverage -name "coverage-summary.json" | head -1)
+          echo "Coverage file: $COVERAGE_FILE"
+
+          if [ -z "$COVERAGE_FILE" ]; then
+            echo "❌ No coverage summary file found"
+            exit 1
+          fi
+
           # Extract coverage percentage from coverage report
-          COVERAGE=$(find coverage -name "coverage-summary.json" -exec cat {} \; | jq -r '.total.lines.pct')
+          COVERAGE=$(cat "$COVERAGE_FILE" | jq -r '.total.lines.pct // "0"')
           echo "Unit test coverage: ${COVERAGE}%"
 
           # Check if coverage is >= 80%
@@ -110,8 +120,18 @@ jobs:
         if: env.UNIT_COVERAGE_PASSED == 'true'
         run: |
           echo "Checking integration test coverage..."
+
+          # Find coverage summary file
+          COVERAGE_FILE=$(find coverage -name "coverage-summary.json" | head -1)
+          echo "Coverage file: $COVERAGE_FILE"
+
+          if [ -z "$COVERAGE_FILE" ]; then
+            echo "❌ No coverage summary file found"
+            exit 1
+          fi
+
           # Extract coverage percentage from integration coverage report
-          COVERAGE=$(find coverage -name "coverage-summary.json" -exec cat {} \; | jq -r '.total.lines.pct')
+          COVERAGE=$(cat "$COVERAGE_FILE" | jq -r '.total.lines.pct // "0"')
           echo "Integration test coverage: ${COVERAGE}%"
 
           # Check if coverage is >= 80%
