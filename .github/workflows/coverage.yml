@@ -1,0 +1,154 @@
+name: Coverage Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  coverage:
+    name: Coverage Tests
+    runs-on: ubuntu-latest
+    env:
+      NX_DAEMON: false
+      NX_CLOUD_DISTRIBUTED_EXECUTION: false
+      NX_CLOUD_DISTRIBUTED_EXECUTION_AGENT_COUNT: 0
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: password
+          POSTGRES_USER: postgres
+          POSTGRES_DB: portfolio_grade_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade_test?schema=public
+
+      - name: Run unit tests with coverage (excluding ui-kit)
+        run: |
+          npx nx run-many --target=test --all --coverage --skip-nx-cache --exclude=ui-kit
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade_test?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_ACCESS_SECRET: test_access_secret
+          JWT_REFRESH_SECRET: test_refresh_secret
+          JWT_ACCESS_TTL: 900s
+          JWT_REFRESH_TTL: 7d
+          TENANT_HEADER: X-Org-Id
+          NODE_ENV: test
+
+      - name: Check unit test coverage
+        run: |
+          echo "Checking unit test coverage..."
+          # Extract coverage percentage from coverage report
+          COVERAGE=$(find coverage -name "coverage-summary.json" -exec cat {} \; | jq -r '.total.lines.pct')
+          echo "Unit test coverage: ${COVERAGE}%"
+
+          # Check if coverage is >= 80%
+          if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+            echo "✅ Unit test coverage is ${COVERAGE}% (>= 80%)"
+            echo "UNIT_COVERAGE_PASSED=true" >> $GITHUB_ENV
+          else
+            echo "❌ Unit test coverage is ${COVERAGE}% (< 80%)"
+            echo "UNIT_COVERAGE_PASSED=false" >> $GITHUB_ENV
+            exit 1
+          fi
+
+      - name: Run integration tests with coverage
+        if: env.UNIT_COVERAGE_PASSED == 'true'
+        run: |
+          npx nx run api:test-integration --coverage --skip-nx-cache
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade_test?schema=public
+          TEST_DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade_test?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_ACCESS_SECRET: test_access_secret
+          JWT_REFRESH_SECRET: test_refresh_secret
+          JWT_ACCESS_TTL: 900s
+          JWT_REFRESH_TTL: 7d
+          TENANT_HEADER: X-Org-Id
+          NODE_ENV: test
+
+      - name: Check integration test coverage
+        if: env.UNIT_COVERAGE_PASSED == 'true'
+        run: |
+          echo "Checking integration test coverage..."
+          # Extract coverage percentage from integration coverage report
+          COVERAGE=$(find coverage -name "coverage-summary.json" -exec cat {} \; | jq -r '.total.lines.pct')
+          echo "Integration test coverage: ${COVERAGE}%"
+
+          # Check if coverage is >= 80%
+          if (( $(echo "$COVERAGE >= 80" | bc -l) )); then
+            echo "✅ Integration test coverage is ${COVERAGE}% (>= 80%)"
+            echo "INTEGRATION_COVERAGE_PASSED=true" >> $GITHUB_ENV
+          else
+            echo "❌ Integration test coverage is ${COVERAGE}% (< 80%)"
+            echo "INTEGRATION_COVERAGE_PASSED=false" >> $GITHUB_ENV
+            exit 1
+          fi
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: coverage/
+          retention-days: 30
+
+      - name: Coverage Summary
+        if: always()
+        run: |
+          echo "## 📊 Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Unit Tests" >> $GITHUB_STEP_SUMMARY
+          if [ "$UNIT_COVERAGE_PASSED" = "true" ]; then
+            echo "✅ **PASSED** - Unit test coverage >= 80%" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **FAILED** - Unit test coverage < 80%" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Integration Tests" >> $GITHUB_STEP_SUMMARY
+          if [ "$INTEGRATION_COVERAGE_PASSED" = "true" ]; then
+            echo "✅ **PASSED** - Integration test coverage >= 80%" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **FAILED** - Integration test coverage < 80%" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📁 Coverage reports uploaded as artifacts" >> $GITHUB_STEP_SUMMARY
