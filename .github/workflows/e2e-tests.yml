@@ -93,9 +93,10 @@ jobs:
 
       - name: Start API server
         run: |
-          npx nx run api:serve --port=3000 --skip-nx-cache --nx-cloud=false &
+          nohup npx nx run api:serve --port=3000 --skip-nx-cache --nx-cloud=false > api.log 2>&1 &
           API_PID=$!
           echo "API_PID=$API_PID" >> $GITHUB_ENV
+          sleep 5
         env:
           DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade?schema=public
           REDIS_URL: redis://localhost:6379
@@ -108,17 +109,19 @@ jobs:
 
       - name: Start Admin server
         run: |
-          npx nx run admin:serve --port=4200 --skip-nx-cache &
+          nohup npx nx run admin:serve --port=4200 --skip-nx-cache > admin.log 2>&1 &
           ADMIN_PID=$!
           echo "ADMIN_PID=$ADMIN_PID" >> $GITHUB_ENV
+          sleep 5
         env:
           VITE_API_URL: http://localhost:3000/api
 
       - name: Start Portal server
         run: |
-          npx nx run portal:serve --port=4201 --skip-nx-cache &
+          nohup npx nx run portal:serve --port=4201 --skip-nx-cache > portal.log 2>&1 &
           PORTAL_PID=$!
           echo "PORTAL_PID=$PORTAL_PID" >> $GITHUB_ENV
+          sleep 5
         env:
           VITE_API_URL: http://localhost:3000/api
 
