@@ -125,6 +125,17 @@ jobs:
         env:
           VITE_API_URL: http://localhost:3000/api
 
+      - name: Check server logs
+        run: |
+          echo "=== API Server Log ==="
+          cat api.log || echo "No API log found"
+          echo "=== Admin Server Log ==="
+          cat admin.log || echo "No Admin log found"
+          echo "=== Portal Server Log ==="
+          cat portal.log || echo "No Portal log found"
+          echo "=== Process Status ==="
+          ps aux | grep -E "(nx|node|vite)" | grep -v grep || echo "No processes found"
+
       - name: Wait for services to be ready
         run: |
           echo "Waiting for API server..."
