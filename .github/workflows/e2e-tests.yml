@@ -93,7 +93,7 @@ jobs:
 
       - name: Start API server
         run: |
-          nohup npx nx run api:serve --port=3000 --skip-nx-cache --nx-cloud=false > api.log 2>&1 &
+          nohup npx nx run api:serve --port=3000 --skip-nx-cache > api.log 2>&1 &
           API_PID=$!
           echo "API_PID=$API_PID" >> $GITHUB_ENV
           sleep 5
