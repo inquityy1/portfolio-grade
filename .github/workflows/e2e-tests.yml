@@ -112,6 +112,7 @@ jobs:
           NODE_ENV: test
           NX_DAEMON: false
           NX_CLOUD_DISTRIBUTED_EXECUTION: false
+          NX_CLOUD_DISTRIBUTED_EXECUTION_AGENT_COUNT: 0
 
       - name: Start Admin server
         run: |
@@ -122,6 +123,7 @@ jobs:
           VITE_API_URL: http://localhost:3000/api
           NX_DAEMON: false
           NX_CLOUD_DISTRIBUTED_EXECUTION: false
+          NX_CLOUD_DISTRIBUTED_EXECUTION_AGENT_COUNT: 0
 
       - name: Start Portal server
         run: |
@@ -132,6 +134,7 @@ jobs:
           VITE_API_URL: http://localhost:3000/api
           NX_DAEMON: false
           NX_CLOUD_DISTRIBUTED_EXECUTION: false
+          NX_CLOUD_DISTRIBUTED_EXECUTION_AGENT_COUNT: 0
 
       - name: Wait for services to be ready
         run: |
