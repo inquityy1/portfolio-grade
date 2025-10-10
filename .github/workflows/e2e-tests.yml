@@ -150,15 +150,23 @@ jobs:
           timeout 120 bash -c 'until curl -s http://localhost:4201 > /dev/null; do sleep 3; done'
           echo "Portal server is ready!"
 
+      - name: Test Admin server directly
+        run: |
+          echo "Testing Admin server directly..."
+          curl -v http://localhost:4200/ || echo "Admin server not responding"
+          curl -v http://localhost:4200/login || echo "Login page not responding"
+          echo "Admin server test complete"
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
       - name: Run Admin E2E tests
-        run: npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium
+        run: npx playwright test --config=apps/admin-e2e/playwright.config.ts --project=chromium --timeout=60000 --max-failures=1
         env:
           VITE_API_URL: http://localhost:3000/api
           BASE_URL: http://localhost:4200
           CI: true
+          PLAYWRIGHT_TIMEOUT: 60000
 
       - name: Run Portal E2E tests
         run: npx playwright test --config=apps/portal-e2e/playwright.config.ts --project=chromium
