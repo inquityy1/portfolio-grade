@@ -66,11 +66,11 @@ jobs:
           echo "Checking unit test coverage..."
 
           # Run unit tests and capture coverage output
-          COVERAGE_OUTPUT=$(npx nx run-many --target=test --all --coverage --skip-nx-cache --exclude=ui-kit 2>&1)
-          echo "$COVERAGE_OUTPUT"
+          npx nx run-many --target=test --all --coverage --skip-nx-cache --exclude=ui-kit > coverage_output.txt 2>&1
+          cat coverage_output.txt
 
           # Extract coverage percentage from the output (look for "All files" line)
-          COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep "All files" | awk '{print $4}' | sed 's/%//')
+          COVERAGE=$(grep "All files" coverage_output.txt | awk '{print $4}' | sed 's/%//')
           echo "Unit test coverage: ${COVERAGE}%"
 
           # Check if coverage is >= 80%
@@ -89,11 +89,11 @@ jobs:
           echo "Checking integration test coverage..."
 
           # Run integration tests and capture coverage output
-          COVERAGE_OUTPUT=$(npx nx run api:test-integration --coverage --skip-nx-cache 2>&1)
-          echo "$COVERAGE_OUTPUT"
+          npx nx run api:test-integration --coverage --skip-nx-cache > integration_coverage_output.txt 2>&1
+          cat integration_coverage_output.txt
 
           # Extract coverage percentage from the output (look for "All files" line)
-          COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep "All files" | awk '{print $4}' | sed 's/%//')
+          COVERAGE=$(grep "All files" integration_coverage_output.txt | awk '{print $4}' | sed 's/%//')
           echo "Integration test coverage: ${COVERAGE}%"
 
           # Check if coverage is >= 80%
