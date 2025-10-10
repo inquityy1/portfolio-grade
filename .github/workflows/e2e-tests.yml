@@ -157,6 +157,13 @@ jobs:
           curl -v http://localhost:4200/login || echo "Login page not responding"
           echo "Admin server test complete"
 
+      - name: Test API server directly
+        run: |
+          echo "Testing API server directly..."
+          curl -v http://localhost:3000/api/docs || echo "API docs not responding"
+          curl -v http://localhost:3000/api/auth/login -X POST -H "Content-Type: application/json" -d '{"email":"adminA@example.com","password":"admin123"}' || echo "API login not responding"
+          echo "API server test complete"
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
