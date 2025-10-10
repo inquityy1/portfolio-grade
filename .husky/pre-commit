@@ -1,7 +1,12 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-# Run lint-staged
+# Run lint check first (this will fail if there are unfixable errors)
+echo "🔍 Running lint check..."
+npm run lint
+
+# Run lint-staged (this fixes what it can)
+echo "🔧 Running lint-staged..."
 npx lint-staged
 
 # Run tests for changed files
