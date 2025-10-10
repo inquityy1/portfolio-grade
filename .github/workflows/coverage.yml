@@ -70,7 +70,7 @@ jobs:
           cat coverage_output.txt
 
           # Extract coverage percentage from the output (look for "All files" line)
-          COVERAGE=$(grep "All files" coverage_output.txt | awk '{print $4}' | sed 's/%//')
+          COVERAGE=$(grep "All files" coverage_output.txt | awk -F'|' '{print $2}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
           echo "Unit test coverage: ${COVERAGE}%"
 
           # Check if coverage is >= 80%
@@ -93,7 +93,7 @@ jobs:
           cat integration_coverage_output.txt
 
           # Extract coverage percentage from the output (look for "All files" line)
-          COVERAGE=$(grep "All files" integration_coverage_output.txt | awk '{print $4}' | sed 's/%//')
+          COVERAGE=$(grep "All files" integration_coverage_output.txt | awk -F'|' '{print $2}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
           echo "Integration test coverage: ${COVERAGE}%"
 
           # Check if coverage is >= 80%
