@@ -26,9 +26,15 @@ jobs:
 
       - name: Run unit tests
         run: npm run test
+        env:
+          NX_DAEMON: false
+          NX_CLOUD_DISTRIBUTED_EXECUTION: false
 
       - name: Generate test coverage report
         run: npm run test -- --coverage
+        env:
+          NX_DAEMON: false
+          NX_CLOUD_DISTRIBUTED_EXECUTION: false
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4
