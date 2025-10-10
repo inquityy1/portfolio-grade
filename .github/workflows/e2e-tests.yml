@@ -63,13 +63,13 @@ jobs:
           DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade?schema=public
 
       - name: Build shared package
-        run: npx nx build shared --skip-nx-cache --nx-cloud=false
+        run: npx nx build shared --skip-nx-cache
         env:
           NX_DAEMON: false
           NX_CLOUD_DISTRIBUTED_EXECUTION: false
 
       - name: Build API
-        run: npx nx build api --skip-nx-cache --nx-cloud=false
+        run: npx nx build api --skip-nx-cache
         env:
           DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade?schema=public
           REDIS_URL: redis://localhost:6379
@@ -83,14 +83,14 @@ jobs:
           NX_CLOUD_DISTRIBUTED_EXECUTION: false
 
       - name: Build Admin
-        run: npx nx build admin --skip-nx-cache --nx-cloud=false
+        run: npx nx build admin --skip-nx-cache
         env:
           VITE_API_URL: http://localhost:3000/api
           NX_DAEMON: false
           NX_CLOUD_DISTRIBUTED_EXECUTION: false
 
       - name: Build Portal
-        run: npx nx build portal --skip-nx-cache --nx-cloud=false
+        run: npx nx build portal --skip-nx-cache
         env:
           VITE_API_URL: http://localhost:3000/api
           NX_DAEMON: false
