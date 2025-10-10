@@ -2,8 +2,8 @@ import { IsObject, IsString } from 'class-validator';
 
 export class CreateFormDto {
   @IsString()
-    name!: string;
+  name!: string;
 
   @IsObject()
-    schema!: Record<string, unknown>;
+  schema!: Record<string, unknown>;
 }

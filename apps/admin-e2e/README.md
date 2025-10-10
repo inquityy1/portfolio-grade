@@ -58,6 +58,7 @@ apps/admin-e2e/src/
 ## 🧪 Test Categories
 
 ### 1. Authentication Tests (`login.spec.ts`)
+
 - ✅ Login form display and validation
 - ✅ Successful login with valid credentials
 - ✅ Failed login with invalid credentials
@@ -67,6 +68,7 @@ apps/admin-e2e/src/
 - ✅ Portal navigation
 
 ### 2. Dashboard Tests (`dashboard.spec.ts`)
+
 - ✅ Page content and navigation
 - ✅ Authentication state persistence
 - ✅ Navigation links functionality
@@ -75,6 +77,7 @@ apps/admin-e2e/src/
 - ✅ Layout structure validation
 
 ### 3. Protected Routes Tests (`protected-routes.spec.ts`)
+
 - ✅ Unauthenticated user redirection
 - ✅ Authenticated user access
 - ✅ Token expiration handling
@@ -83,6 +86,7 @@ apps/admin-e2e/src/
 - ✅ Intended page redirection after login
 
 ### 4. Admin Jobs Tests (`admin-jobs.spec.ts`)
+
 - ✅ Tag statistics display and refresh
 - ✅ Post preview job management
 - ✅ API error handling
@@ -91,6 +95,7 @@ apps/admin-e2e/src/
 - ✅ Preview generation and viewing
 
 ### 5. Audit Logs Tests (`audit-logs.spec.ts`)
+
 - ✅ Audit log display with user information
 - ✅ Action badge styling and colors
 - ✅ Resource ID copying
@@ -99,6 +104,7 @@ apps/admin-e2e/src/
 - ✅ Error scenarios
 
 ### 6. User Creation Tests (`create-user.spec.ts`)
+
 - ✅ Form validation and submission
 - ✅ Organization loading and selection
 - ✅ Role assignment
@@ -107,6 +113,7 @@ apps/admin-e2e/src/
 - ✅ Form reset after creation
 
 ### 7. Organization Creation Tests (`create-organization.spec.ts`)
+
 - ✅ Form validation (min/max length)
 - ✅ Successful creation
 - ✅ Error handling
@@ -117,7 +124,9 @@ apps/admin-e2e/src/
 ## 🛠️ Test Utilities
 
 ### AdminTestHelpers
+
 Core utility class providing:
+
 - Navigation helpers
 - Authentication methods
 - API mocking
@@ -125,7 +134,9 @@ Core utility class providing:
 - Assertion helpers
 
 ### TestDataFactory
+
 Factory for creating test data:
+
 - User objects with different roles
 - Organizations
 - Audit logs
@@ -133,7 +144,9 @@ Factory for creating test data:
 - Bulk data generation
 
 ### ApiMockHelper
+
 API mocking utilities:
+
 - Successful response mocking
 - Error response mocking
 - Slow response simulation
@@ -184,6 +197,7 @@ npx nx run admin-e2e:e2e --workers=4
 ## 🔧 Configuration
 
 ### Playwright Config (`playwright.config.ts`)
+
 - **Base URL**: `http://localhost:4200`
 - **Browsers**: Chromium, Firefox, WebKit
 - **Timeouts**: 10s action, 30s navigation
@@ -192,6 +206,7 @@ npx nx run admin-e2e:e2e --workers=4
 - **Traces**: On first retry
 
 ### Test Environment
+
 - **Web Server**: Auto-starts admin app on port 4200
 - **API Mocking**: Comprehensive API response mocking
 - **Test Data**: Isolated test data per test
@@ -201,27 +216,30 @@ npx nx run admin-e2e:e2e --workers=4
 
 Our E2E tests achieve **80%+ coverage** across:
 
-| Component | Coverage | Tests |
-|-----------|----------|-------|
-| Authentication | 95% | 8 tests |
-| Dashboard | 90% | 7 tests |
-| Protected Routes | 95% | 9 tests |
-| Admin Jobs | 85% | 12 tests |
-| Audit Logs | 90% | 11 tests |
-| User Creation | 85% | 10 tests |
-| Organization Creation | 90% | 12 tests |
-| **Total** | **88%** | **69 tests** |
+| Component             | Coverage | Tests        |
+| --------------------- | -------- | ------------ |
+| Authentication        | 95%      | 8 tests      |
+| Dashboard             | 90%      | 7 tests      |
+| Protected Routes      | 95%      | 9 tests      |
+| Admin Jobs            | 85%      | 12 tests     |
+| Audit Logs            | 90%      | 11 tests     |
+| User Creation         | 85%      | 10 tests     |
+| Organization Creation | 90%      | 12 tests     |
+| **Total**             | **88%**  | **69 tests** |
 
 ## 🚨 CI/CD Integration
 
 ### GitHub Actions
+
 Automated E2E testing on:
+
 - Push to main/develop branches
 - Pull requests
 - Artifact collection (reports, videos)
 - Multi-browser testing
 
 ### Local Development
+
 ```bash
 # Quick test during development
 npm run e2e:test:headed
@@ -238,11 +256,13 @@ npx nx run admin-e2e:e2e --grep "create user"
 ### Common Issues
 
 1. **Tests timing out**
+
    - Check if admin app is running on port 4200
    - Verify API server is running on port 3000
    - Increase timeout in playwright.config.ts
 
 2. **API mocking not working**
+
    - Ensure mock routes are set up before navigation
    - Check route patterns match API calls
    - Verify mock responses are properly formatted
@@ -268,6 +288,7 @@ npx nx run admin-e2e:e2e --trace=on
 ## 📈 Best Practices
 
 ### Test Writing
+
 - ✅ Use descriptive test names
 - ✅ Group related tests in describe blocks
 - ✅ Mock external dependencies
@@ -275,12 +296,14 @@ npx nx run admin-e2e:e2e --trace=on
 - ✅ Use page object pattern for complex interactions
 
 ### Data Management
+
 - ✅ Use factories for test data
 - ✅ Keep test data isolated
 - ✅ Avoid hardcoded values
 - ✅ Use realistic test scenarios
 
 ### Maintenance
+
 - ✅ Update tests when UI changes
 - ✅ Keep mocks in sync with API
 - ✅ Regular test review and cleanup
@@ -289,12 +312,14 @@ npx nx run admin-e2e:e2e --trace=on
 ## 🔄 Continuous Improvement
 
 ### Monitoring
+
 - Track test execution time
 - Monitor flaky test patterns
 - Analyze failure trends
 - Update coverage metrics
 
 ### Expansion
+
 - Add mobile browser testing
 - Implement visual regression testing
 - Add performance testing
@@ -305,6 +330,7 @@ npx nx run admin-e2e:e2e --trace=on
 ## 📞 Support
 
 For questions or issues with E2E tests:
+
 1. Check this documentation
 2. Review test logs and reports
 3. Use debug mode for investigation

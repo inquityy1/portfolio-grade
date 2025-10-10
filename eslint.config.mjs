@@ -47,7 +47,7 @@ export default [
       'prisma/**/*.ts',
       'scripts/**/*.ts',
       '*.ts',
-      '*.tsx'
+      '*.tsx',
     ],
     rules: {
       // NX Module Boundaries - More lenient
@@ -78,12 +78,12 @@ export default [
       'no-var': 'error',
 
       // Formatting Rules - Auto-fixable
-      'semi': ['error', 'always'],
+      semi: ['error', 'always'],
       'comma-dangle': ['error', 'always-multiline'],
       'eol-last': 'error',
       'no-trailing-spaces': 'error',
-      'quotes': ['error', 'single', { avoidEscape: true }],
-      'indent': ['error', 2, { SwitchCase: 1 }], // Changed to 2 spaces to match existing codebase
+      quotes: ['error', 'single', { avoidEscape: true }],
+      // indent: ['error', 2, { SwitchCase: 1 }], // Disabled - let Prettier handle indentation
 
       // TypeScript Rules
       '@typescript-eslint/no-explicit-any': 'off', // Turn off any type warnings

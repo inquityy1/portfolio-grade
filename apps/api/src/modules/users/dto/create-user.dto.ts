@@ -3,19 +3,19 @@ import type { Role } from '@portfolio-grade/shared';
 
 export class CreateUserDto {
   @IsEmail()
-    email: string;
+  email: string;
 
   @IsString()
   @MinLength(6)
-    password: string;
+  password: string;
 
   @IsString()
-    name: string;
+  name: string;
 
   @IsEnum(['OrgAdmin', 'Editor', 'Viewer'])
-    role: Role;
+  role: Role;
 
   @IsString()
   @IsOptional()
-    organizationId?: string;
+  organizationId?: string;
 }

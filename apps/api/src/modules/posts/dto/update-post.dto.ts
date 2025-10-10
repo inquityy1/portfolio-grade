@@ -4,20 +4,20 @@ export class UpdatePostDto {
   // optimistic locking — client must send the current version they have
   @IsNumber()
   @Min(1)
-    version!: number;
+  version!: number;
 
   @IsString()
   @IsOptional()
   @MinLength(2)
-    title?: string;
+  title?: string;
 
   @IsString()
   @IsOptional()
   @MinLength(1)
-    content?: string;
+  content?: string;
 
   // replace tags with this set (optional)
   @IsArray()
   @IsOptional()
-    tagIds?: string[];
+  tagIds?: string[];
 }

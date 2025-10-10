@@ -20,4 +20,3 @@ export const ErrorContainer = styled.div<React.HTMLAttributes<HTMLDivElement>>`
   padding: ${({ theme }) => theme.spacing(6)};
   color: ${({ theme }) => theme.colors.error || 'tomato'};
 `;
-

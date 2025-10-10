@@ -347,8 +347,8 @@ describe('RateLimitGuard', () => {
           scope === 'user'
             ? 'GET:/api/test'
             : scope === 'org'
-              ? 'POST:/api/create'
-              : 'PUT:/api/update'
+            ? 'POST:/api/create'
+            : 'PUT:/api/update'
         }`;
         expect(key).toBe(expectedKey);
       });
