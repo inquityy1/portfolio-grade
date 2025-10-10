@@ -13,7 +13,7 @@ export const Alert = styled.div<
         return `
           color: ${theme.colors.error || 'tomato'};
           background-color: ${theme.colors.errorBackground || '#ffe6e6'};
-          border: 1px solid ${theme.colors.error || 'tomato'};
+            border: 1px solid ${theme.colors.error || 'tomato'};
         `;
       case 'success':
         return `
