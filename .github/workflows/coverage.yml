@@ -61,34 +61,16 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade_test?schema=public
 
-      - name: Run unit tests with coverage (excluding ui-kit)
-        run: |
-          npx nx run-many --target=test --all --coverage --skip-nx-cache --exclude=ui-kit
-        env:
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade_test?schema=public
-          REDIS_URL: redis://localhost:6379
-          JWT_ACCESS_SECRET: test_access_secret
-          JWT_REFRESH_SECRET: test_refresh_secret
-          JWT_ACCESS_TTL: 900s
-          JWT_REFRESH_TTL: 7d
-          TENANT_HEADER: X-Org-Id
-          NODE_ENV: test
-
       - name: Check unit test coverage
         run: |
           echo "Checking unit test coverage..."
 
-          # Find coverage summary file
-          COVERAGE_FILE=$(find coverage -name "coverage-summary.json" | head -1)
-          echo "Coverage file: $COVERAGE_FILE"
+          # Run unit tests and capture coverage output
+          COVERAGE_OUTPUT=$(npx nx run-many --target=test --all --coverage --skip-nx-cache --exclude=ui-kit 2>&1)
+          echo "$COVERAGE_OUTPUT"
 
-          if [ -z "$COVERAGE_FILE" ]; then
-            echo "❌ No coverage summary file found"
-            exit 1
-          fi
-
-          # Extract coverage percentage from coverage report
-          COVERAGE=$(cat "$COVERAGE_FILE" | jq -r '.total.lines.pct // "0"')
+          # Extract coverage percentage from the output (look for "All files" line)
+          COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep "All files" | awk '{print $4}' | sed 's/%//')
           echo "Unit test coverage: ${COVERAGE}%"
 
           # Check if coverage is >= 80%
@@ -101,37 +83,17 @@ jobs:
             exit 1
           fi
 
-      - name: Run integration tests with coverage
-        if: env.UNIT_COVERAGE_PASSED == 'true'
-        run: |
-          npx nx run api:test-integration --coverage --skip-nx-cache
-        env:
-          DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade_test?schema=public
-          TEST_DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade_test?schema=public
-          REDIS_URL: redis://localhost:6379
-          JWT_ACCESS_SECRET: test_access_secret
-          JWT_REFRESH_SECRET: test_refresh_secret
-          JWT_ACCESS_TTL: 900s
-          JWT_REFRESH_TTL: 7d
-          TENANT_HEADER: X-Org-Id
-          NODE_ENV: test
-
       - name: Check integration test coverage
         if: env.UNIT_COVERAGE_PASSED == 'true'
         run: |
           echo "Checking integration test coverage..."
 
-          # Find coverage summary file
-          COVERAGE_FILE=$(find coverage -name "coverage-summary.json" | head -1)
-          echo "Coverage file: $COVERAGE_FILE"
+          # Run integration tests and capture coverage output
+          COVERAGE_OUTPUT=$(npx nx run api:test-integration --coverage --skip-nx-cache 2>&1)
+          echo "$COVERAGE_OUTPUT"
 
-          if [ -z "$COVERAGE_FILE" ]; then
-            echo "❌ No coverage summary file found"
-            exit 1
-          fi
-
-          # Extract coverage percentage from integration coverage report
-          COVERAGE=$(cat "$COVERAGE_FILE" | jq -r '.total.lines.pct // "0"')
+          # Extract coverage percentage from the output (look for "All files" line)
+          COVERAGE=$(echo "$COVERAGE_OUTPUT" | grep "All files" | awk '{print $4}' | sed 's/%//')
           echo "Integration test coverage: ${COVERAGE}%"
 
           # Check if coverage is >= 80%
@@ -143,6 +105,16 @@ jobs:
             echo "INTEGRATION_COVERAGE_PASSED=false" >> $GITHUB_ENV
             exit 1
           fi
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade_test?schema=public
+          TEST_DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade_test?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_ACCESS_SECRET: test_access_secret
+          JWT_REFRESH_SECRET: test_refresh_secret
+          JWT_ACCESS_TTL: 900s
+          JWT_REFRESH_TTL: 7d
+          TENANT_HEADER: X-Org-Id
+          NODE_ENV: test
 
       - name: Upload coverage reports
         if: always()
