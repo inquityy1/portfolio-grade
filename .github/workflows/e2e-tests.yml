@@ -93,40 +93,34 @@ jobs:
 
       - name: Start API server
         run: |
-          export NX_DAEMON=false
-          export NX_CLOUD_DISTRIBUTED_EXECUTION=false
-          export NX_CLOUD_DISTRIBUTED_EXECUTION_AGENT_COUNT=0
-          export DATABASE_URL=postgresql://postgres:password@localhost:5432/portfolio_grade?schema=public
-          export REDIS_URL=redis://localhost:6379
-          export JWT_ACCESS_SECRET=test_access_secret
-          export JWT_REFRESH_SECRET=test_refresh_secret
-          export JWT_ACCESS_TTL=900s
-          export JWT_REFRESH_TTL=7d
-          export TENANT_HEADER=X-Org-Id
-          export NODE_ENV=test
-          npx nx serve api --port=3000 &
+          npx nx run api:serve --port=3000 --skip-nx-cache --nx-cloud=false &
           API_PID=$!
           echo "API_PID=$API_PID" >> $GITHUB_ENV
+        env:
+          DATABASE_URL: postgresql://postgres:password@localhost:5432/portfolio_grade?schema=public
+          REDIS_URL: redis://localhost:6379
+          JWT_ACCESS_SECRET: test_access_secret
+          JWT_REFRESH_SECRET: test_refresh_secret
+          JWT_ACCESS_TTL: 900s
+          JWT_REFRESH_TTL: 7d
+          TENANT_HEADER: X-Org-Id
+          NODE_ENV: test
 
       - name: Start Admin server
         run: |
-          export NX_DAEMON=false
-          export NX_CLOUD_DISTRIBUTED_EXECUTION=false
-          export NX_CLOUD_DISTRIBUTED_EXECUTION_AGENT_COUNT=0
-          export VITE_API_URL=http://localhost:3000/api
-          npx nx serve admin --port=4200 &
+          npx nx run admin:serve --port=4200 --skip-nx-cache --nx-cloud=false &
           ADMIN_PID=$!
           echo "ADMIN_PID=$ADMIN_PID" >> $GITHUB_ENV
+        env:
+          VITE_API_URL: http://localhost:3000/api
 
       - name: Start Portal server
         run: |
-          export NX_DAEMON=false
-          export NX_CLOUD_DISTRIBUTED_EXECUTION=false
-          export NX_CLOUD_DISTRIBUTED_EXECUTION_AGENT_COUNT=0
-          export VITE_API_URL=http://localhost:3000/api
-          npx nx serve portal --port=4201 &
+          npx nx run portal:serve --port=4201 --skip-nx-cache --nx-cloud=false &
           PORTAL_PID=$!
           echo "PORTAL_PID=$PORTAL_PID" >> $GITHUB_ENV
+        env:
+          VITE_API_URL: http://localhost:3000/api
 
       - name: Wait for services to be ready
         run: |
