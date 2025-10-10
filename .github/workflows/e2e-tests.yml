@@ -108,7 +108,7 @@ jobs:
 
       - name: Start Admin server
         run: |
-          npx nx run admin:serve --port=4200 --skip-nx-cache --nx-cloud=false &
+          npx nx run admin:serve --port=4200 --skip-nx-cache &
           ADMIN_PID=$!
           echo "ADMIN_PID=$ADMIN_PID" >> $GITHUB_ENV
         env:
@@ -116,7 +116,7 @@ jobs:
 
       - name: Start Portal server
         run: |
-          npx nx run portal:serve --port=4201 --skip-nx-cache --nx-cloud=false &
+          npx nx run portal:serve --port=4201 --skip-nx-cache &
           PORTAL_PID=$!
           echo "PORTAL_PID=$PORTAL_PID" >> $GITHUB_ENV
         env:
