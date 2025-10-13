@@ -205,6 +205,7 @@ The application uses a comprehensive PostgreSQL schema with multi-tenant archite
 
 - **[ERD Overview](docs/erd-overview.md)** - High-level system relationships
 - **[System Architecture](docs/system-architecture.md)** - Database integration patterns
+- **[Performance Guide](docs/performance-guide.md)** - Performance optimization and monitoring
 
 ### Key Schema Features
 
