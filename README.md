@@ -197,6 +197,27 @@ Once the API is running, you can access:
 - **Swagger UI**: http://localhost:3000/api/docs
 - **API Endpoints**: http://localhost:3000/api
 
+## 📊 Database Schema & ERDs
+
+The application uses a comprehensive PostgreSQL schema with multi-tenant architecture:
+
+### Entity Relationship Diagrams
+
+- **[ERD Overview](docs/erd-overview.md)** - High-level system relationships
+- **[System Architecture](docs/system-architecture.md)** - Database integration patterns
+- **[Generated ERD](docs/generated-erd.mmd)** - Auto-generated from Prisma schema
+
+### Key Schema Features
+
+- **Multi-Tenant**: All data scoped to organizations
+- **RBAC**: Three-tier role system (OrgAdmin > Editor > Viewer)
+- **Content Management**: Posts, tags, comments with versioning
+- **Form Builder**: Dynamic forms with JSON schema
+- **Audit Trail**: Complete activity logging
+- **Event Processing**: Outbox pattern for reliable events
+- **File Management**: Polymorphic file attachments
+- **Performance**: Optimized indexes and caching
+
 ## 🛠️ Development Workflow
 
 1. **Make changes** to your code

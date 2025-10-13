@@ -1,0 +1,215 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OrgAdmin
+  Editor
+  Viewer
+}
+
+model Organization {
+  id          String       @id @default(cuid())
+  name        String
+  memberships Membership[]
+  users       User[]       @relation("OrgUsers")
+  posts       Post[]
+  tags        Tag[]
+  forms       Form[]
+  auditLogs   AuditLog[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  name          String?
+  memberships   Membership[]
+  organizations Organization[] @relation("OrgUsers")
+  posts         Post[]
+  comments      Comment[]
+  auditLogs     AuditLog[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Membership {
+  id             String       @id @default(cuid())
+  role           Role
+  organizationId String
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+}
+
+model Post {
+  id             String       @id @default(cuid())
+  organizationId String
+  authorId       String?
+  title          String
+  content        String
+  version        Int          @default(1)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  author         User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  postTags       PostTag[]
+  comments       Comment[]
+  revisions      Revision[]
+  files          FileAsset[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, updatedAt])
+  @@index([authorId])
+}
+
+model Tag {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  postTags       PostTag[]
+
+  @@unique([organizationId, name])
+}
+
+model PostTag {
+  postId String
+  tagId  String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  postId    String
+  authorId  String?
+  content   String
+  deletedAt DateTime?
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([postId, createdAt])
+}
+
+model Revision {
+  id        String   @id @default(cuid())
+  postId    String
+  version   Int
+  content   String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, version])
+}
+
+model Form {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  schema         Json
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fields         Field[]
+  submissions    Submission[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, updatedAt])
+}
+
+model Field {
+  id     String @id @default(cuid())
+  formId String
+  label  String
+  type   String
+  config Json?
+  order  Int    @default(0)
+  form   Form   @relation(fields: [formId], references: [id], onDelete: Cascade)
+}
+
+model Submission {
+  id        String      @id @default(cuid())
+  formId    String
+  data      Json
+  form      Form        @relation(fields: [formId], references: [id], onDelete: Cascade)
+  files     FileAsset[]
+  createdAt DateTime    @default(now())
+
+  @@index([formId, createdAt])
+}
+
+model AuditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String?
+  action         String
+  resource       String
+  resourceId     String
+  at             DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, at])
+  @@index([resource, resourceId])
+}
+
+model FileAsset {
+  id           String      @id @default(cuid())
+  url          String
+  mimeType     String
+  postId       String?
+  submissionId String?
+  post         Post?       @relation(fields: [postId], references: [id], onDelete: SetNull)
+  submission   Submission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  createdAt    DateTime    @default(now())
+
+  @@index([postId])
+  @@index([submissionId])
+}
+
+model Outbox {
+  id        String   @id @default(cuid())
+  topic     String
+  payload   Json
+  status    String   @default("pending")
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
+
+model IdempotencyKey {
+  id        String   @id @default(cuid())
+  orgId     String
+  route     String
+  key       String
+  bodyHash  String
+  response  Json?
+  createdAt DateTime @default(now())
+
+  @@unique([orgId, route, key], name:"orgId_route_key")
+}
+
+model TagAggregate {
+  id             String   @id @default(cuid())
+  organizationId String
+  tagId          String
+  count          Int
+  calculatedAt   DateTime @default(now())
+
+  @@unique([organizationId, tagId])
+  @@index([organizationId, calculatedAt])
+}

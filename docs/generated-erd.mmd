@@ -1,0 +1,172 @@
+erDiagram
+    Organization {
+        string id PK
+        string name
+        membership memberships
+        post posts
+        tag tags
+        form forms
+        auditlog auditLogs
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    User {
+        string id PK
+        string email
+        string password
+        string name
+        membership memberships
+        post posts
+        comment comments
+        auditlog auditLogs
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Membership {
+        string id PK
+        role role
+        string organizationId
+        string userId
+    }
+
+    Post {
+        string id PK
+        string organizationId
+        string authorId
+        string title
+        string content
+        int version
+        posttag postTags
+        comment comments
+        revision revisions
+        fileasset files
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Tag {
+        string id PK
+        string organizationId
+        string name
+        posttag postTags
+    }
+
+    PostTag {
+        string postId
+        string tagId
+    }
+
+    Comment {
+        string id PK
+        string postId
+        string authorId
+        string content
+        datetime deletedAt
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Revision {
+        string id PK
+        string postId
+        int version
+        string content
+        datetime createdAt
+    }
+
+    Form {
+        string id PK
+        string organizationId
+        string name
+        json schema
+        field fields
+        submission submissions
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Field {
+        string id PK
+        string formId
+        string label
+        string type
+        json config
+        int order
+    }
+
+    Submission {
+        string id PK
+        string formId
+        json data
+        fileasset files
+        datetime createdAt
+    }
+
+    AuditLog {
+        string id PK
+        string organizationId
+        string userId
+        string action
+        string resource
+        string resourceId
+        datetime at
+    }
+
+    FileAsset {
+        string id PK
+        string url
+        string mimeType
+        string postId
+        string submissionId
+        datetime createdAt
+    }
+
+    Outbox {
+        string id PK
+        string topic
+        json payload
+        string status
+        int attempts
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    IdempotencyKey {
+        string id PK
+        string orgId
+        string route
+        string key
+        string bodyHash
+        json response
+        datetime createdAt
+    }
+
+    TagAggregate {
+        string id PK
+        string organizationId
+        string tagId
+        int count
+        datetime calculatedAt
+    }
+
+    Organization ||--o{ User : "users"
+    User ||--o{ Organization : "organizations"
+    Membership ||--o{ Organization : "organization"
+    Membership ||--o{ User : "user"
+    Post ||--o{ Organization : "organization"
+    Post ||--o{ User : "author"
+    Tag ||--o{ Organization : "organization"
+    PostTag ||--o{ Post : "post"
+    PostTag ||--o{ Tag : "tag"
+    Comment ||--o{ Post : "post"
+    Comment ||--o{ User : "author"
+    Revision ||--o{ Post : "post"
+    Form ||--o{ Organization : "organization"
+    Field ||--o{ Form : "form"
+    Submission ||--o{ Form : "form"
+    AuditLog ||--o{ Organization : "organization"
+    AuditLog ||--o{ User : "user"
+    FileAsset ||--o{ Post : "post"
+    FileAsset ||--o{ Submission : "submission"
