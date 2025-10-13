@@ -162,21 +162,21 @@ export class PostResponseDto {
 ```typescript
 // Cursor-based pagination for large datasets
 @Get()
-async getPosts(
+list(
+  @OrgId() orgId: string,
+  @Query('limit') limit?: string,
   @Query('cursor') cursor?: string,
-  @Query('limit') limit = 20,
-  @Tenant() tenant: TenantContext
+  @Query('q') q?: string,
+  @Query('tagId') tagId?: string,
+  @Query('includeFileAssets') includeFileAssets?: string,
 ) {
-  const posts = await this.postService.findMany({
-    organizationId: tenant.organizationId,
-    cursor,
-    limit: Math.min(limit, 100) // Cap at 100
+  return this.posts.list(orgId, {
+    limit: limit ? Number(limit) : undefined,
+    cursor: cursor ?? null,
+    q: q ?? null,
+    tagId: tagId ?? null,
+    includeFileAssets: includeFileAssets === 'true',
   });
-
-  return {
-    data: posts,
-    nextCursor: posts.length === limit ? posts[posts.length - 1].id : null
-  };
 }
 ```
 
@@ -185,28 +185,23 @@ async getPosts(
 #### Redis Integration
 
 ```typescript
-// Cache frequently accessed data
+// Rate limiting with Redis
 @Injectable()
-export class PostService {
-  async findById(id: string, organizationId: string): Promise<Post> {
-    const cacheKey = `post:${organizationId}:${id}`;
+export class RateLimitService {
+  async hit(key: string, limit: number, windowSec: number) {
+    const redis = this.redisService.getClient();
+    const current = await redis.incr(key);
 
-    // Try cache first
-    const cached = await this.redis.get(cacheKey);
-    if (cached) {
-      return JSON.parse(cached);
+    if (current === 1) {
+      await redis.expire(key, windowSec);
     }
 
-    // Fetch from database
-    const post = await this.prisma.post.findFirst({
-      where: { id, organizationId },
-      include: { author: true, tags: true },
-    });
-
-    // Cache for 5 minutes
-    await this.redis.setex(cacheKey, 300, JSON.stringify(post));
-
-    return post;
+    return {
+      allowed: current <= limit,
+      limit,
+      remaining: Math.max(0, limit - current),
+      resetSeconds: await redis.ttl(key),
+    };
   }
 }
 ```
@@ -214,26 +209,41 @@ export class PostService {
 #### Session Caching
 
 ```typescript
-// Cache user sessions and roles
+// Idempotency caching with Redis
 @Injectable()
-export class AuthService {
-  async getUserRoles(userId: string): Promise<Membership[]> {
-    const cacheKey = `user:${userId}:roles`;
+export class IdempotencyInterceptor implements NestInterceptor {
+  intercept(ctx: ExecutionContext, next: CallHandler): Observable<any> {
+    const req = ctx.switchToHttp().getRequest();
+    const res = ctx.switchToHttp().getResponse();
 
-    const cached = await this.redis.get(cacheKey);
-    if (cached) {
-      return JSON.parse(cached);
-    }
+    const key = req.headers['idempotency-key'];
+    const orgId = req.headers['x-org-id'];
+    const route = `${req.method}:${req.path}`;
+    const hash = bodyHash(req.body);
 
-    const memberships = await this.prisma.membership.findMany({
-      where: { userId },
-      include: { organization: true },
-    });
+    return from(
+      this.prisma.idempotencyKey.findUnique({
+        where: { orgId_route_key: { orgId, route, key } },
+        select: { bodyHash: true, response: true },
+      }),
+    ).pipe(
+      switchMap(found => {
+        if (found && found.bodyHash === hash && found.response != null) {
+          res.setHeader('X-Idempotency', 'HIT');
+          return of(found.response);
+        }
 
-    // Cache for 10 minutes
-    await this.redis.setex(cacheKey, 600, JSON.stringify(memberships));
-
-    return memberships;
+        return next.handle().pipe(
+          tap(async data => {
+            await this.prisma.idempotencyKey.update({
+              where: { orgId_route_key: { orgId, route, key } },
+              data: { response: data },
+            });
+            res.setHeader('X-Idempotency', 'MISS');
+          }),
+        );
+      }),
+    );
   }
 }
 ```
@@ -243,14 +253,15 @@ export class AuthService {
 #### BullMQ Integration
 
 ```typescript
-// Process heavy operations asynchronously
+// Process background jobs for admin operations
 @Injectable()
-export class FileProcessingService {
-  async processFileUpload(fileId: string) {
-    await this.fileQueue.add(
-      'process-file',
+export class TagStatsProcessor {
+  async enqueue(orgId: string) {
+    // Queue tag statistics calculation job
+    const job = await this.queue.add(
+      'calculate-tag-stats',
       {
-        fileId,
+        organizationId: orgId,
         timestamp: Date.now(),
       },
       {
@@ -261,20 +272,44 @@ export class FileProcessingService {
         },
       },
     );
+
+    return job;
   }
 
-  @Process('process-file')
-  async handleFileProcessing(job: Job<{ fileId: string }>) {
-    const { fileId } = job.data;
+  @Process('calculate-tag-stats')
+  async handleTagStatsCalculation(job: Job<{ organizationId: string }>) {
+    const { organizationId } = job.data;
 
-    // Process file (resize, optimize, etc.)
-    await this.processFile(fileId);
-
-    // Update database
-    await this.prisma.fileAsset.update({
-      where: { id: fileId },
-      data: { status: 'processed' },
+    // Calculate tag usage statistics
+    const tagStats = await this.prisma.postTag.groupBy({
+      by: ['tagId'],
+      where: {
+        post: { organizationId },
+      },
+      _count: { tagId: true },
     });
+
+    // Update tag aggregates
+    for (const stat of tagStats) {
+      await this.prisma.tagAggregate.upsert({
+        where: {
+          organizationId_tagId: {
+            organizationId,
+            tagId: stat.tagId,
+          },
+        },
+        update: {
+          count: stat._count.tagId,
+          calculatedAt: new Date(),
+        },
+        create: {
+          organizationId,
+          tagId: stat.tagId,
+          count: stat._count.tagId,
+          calculatedAt: new Date(),
+        },
+      });
+    }
   }
 }
 ```
@@ -450,32 +485,34 @@ export default defineConfig({
 
 ### Application Performance Monitoring
 
-#### OpenTelemetry Integration
+#### Rate Limiting Monitoring
 
 ```typescript
-// Instrument API endpoints
-@Controller('posts')
-export class PostController {
-  @Get()
-  @Trace('get-posts')
-  async getPosts(@Tenant() tenant: TenantContext) {
-    const span = trace.getActiveSpan();
-    span?.setAttributes({
-      'organization.id': tenant.organizationId,
-      'user.id': tenant.userId,
-    });
+// Monitor rate limiting with Redis
+@Injectable()
+export class RateLimitGuard implements CanActivate {
+  async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    const req = ctx.switchToHttp().getRequest<Request>();
+    const res = ctx.switchToHttp().getResponse();
 
-    try {
-      const posts = await this.postService.findMany(tenant.organizationId);
-      span?.setStatus({ code: SpanStatusCode.OK });
-      return posts;
-    } catch (error) {
-      span?.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: error.message,
-      });
-      throw error;
-    }
+    const orgId = (req.headers['x-org-id'] as string) || 'no-org';
+    const userId = (req as any).user?.userId || 'anon';
+    const routeKey = `${req.method}:${req.baseUrl || ''}${req.path || ''}`;
+
+    // Check per-user rate limit
+    const userKey = `user:${userId}:${routeKey}`;
+    const userResult = await this.limiter.hit(userKey, 30, 60);
+
+    // Check per-org rate limit
+    const orgKey = `org:${orgId}:${routeKey}`;
+    const orgResult = await this.limiter.hit(orgKey, 300, 60);
+
+    // Set rate limit headers
+    res.setHeader('X-RateLimit-Limit', String(userResult.limit));
+    res.setHeader('X-RateLimit-Remaining', String(userResult.remaining));
+    res.setHeader('X-RateLimit-Reset', String(Date.now() + userResult.resetSeconds * 1000));
+
+    return userResult.allowed && orgResult.allowed;
   }
 }
 ```
@@ -483,30 +520,37 @@ export class PostController {
 #### Custom Metrics
 
 ```typescript
-// Track business metrics
+// Track admin job metrics
 @Injectable()
-export class MetricsService {
-  private readonly postCounter = new Counter({
-    name: 'posts_created_total',
-    help: 'Total number of posts created',
-    labelNames: ['organization_id'],
-  });
+export class AdminJobsController {
+  @Post('tag-stats/run')
+  async runTagStats(@OrgId() orgId: string) {
+    // Track job queuing
+    this.logger.log(`Tag stats job queued for organization: ${orgId}`);
 
-  private readonly responseTimeHistogram = new Histogram({
-    name: 'http_request_duration_seconds',
-    help: 'HTTP request duration in seconds',
-    labelNames: ['method', 'route', 'status_code'],
-  });
+    await this.tagStats.enqueue(orgId);
 
-  incrementPostCreated(organizationId: string) {
-    this.postCounter.inc({ organization_id: organizationId });
+    // Track successful job creation
+    this.logger.log(`Tag stats job created successfully for org: ${orgId}`);
+
+    return { ok: true, queued: true };
   }
 
-  recordResponseTime(method: string, route: string, statusCode: number, duration: number) {
-    this.responseTimeHistogram.observe(
-      { method, route, status_code: statusCode.toString() },
-      duration,
-    );
+  @Post('post-preview/:postId')
+  async runPreview(@OrgId() orgId: string, @Param('postId') postId: string) {
+    const startTime = Date.now();
+
+    try {
+      const job = await this.preview.enqueue(orgId, postId);
+      const duration = Date.now() - startTime;
+
+      this.logger.log(`Preview job processed in ${duration}ms for post: ${postId}`);
+
+      return { ok: true, queued: true };
+    } catch (error) {
+      this.logger.error(`Preview job failed for post ${postId}:`, error);
+      throw error;
+    }
   }
 }
 ```
@@ -516,26 +560,44 @@ export class MetricsService {
 #### Query Performance Tracking
 
 ```typescript
-// Monitor slow queries
+// Monitor Prisma query performance
 @Injectable()
-export class DatabaseMonitoringService {
-  async logSlowQuery(query: string, duration: number, params: any[]) {
-    if (duration > 1000) {
-      // Log queries > 1 second
-      this.logger.warn('Slow query detected', {
-        query,
-        duration,
-        params,
+export class PostsService {
+  async list(orgId: string, opts: any) {
+    const startTime = Date.now();
+
+    try {
+      const result = await this.prisma.post.findMany({
+        where: { organizationId: orgId },
+        take: opts.limit ? Math.min(Math.max(opts.limit, 1), 50) : 10,
+        cursor: opts.cursor ? { id: opts.cursor } : undefined,
+        skip: opts.cursor ? 1 : 0,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          version: true,
+          createdAt: true,
+          updatedAt: true,
+          author: { select: { name: true } },
+          postTags: { select: { tag: { select: { id: true, name: true } } } },
+        },
       });
+
+      const duration = Date.now() - startTime;
+
+      // Log slow queries
+      if (duration > 1000) {
+        this.logger.warn(`Slow query detected: posts.list took ${duration}ms for org: ${orgId}`);
+      }
+
+      return result;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      this.logger.error(`Query failed after ${duration}ms:`, error);
+      throw error;
     }
-  }
-
-  async analyzeQueryPerformance(query: string) {
-    const result = await this.prisma.$queryRaw`
-      EXPLAIN ANALYZE ${Prisma.raw(query)}
-    `;
-
-    this.logger.info('Query analysis', { query, result });
   }
 }
 ```
@@ -588,7 +650,7 @@ performance.measure('post-load', 'post-load-start', 'post-load-end');
 #### API Load Testing
 
 ```typescript
-// Use Artillery for load testing
+// Test posts API with cursor pagination
 // artillery-config.yml
 config:
   target: 'http://localhost:3000'
@@ -596,22 +658,30 @@ config:
     - duration: 60
       arrivalRate: 10
 scenarios:
-  - name: "Post CRUD operations"
+  - name: "Posts API operations"
     weight: 100
     flow:
-      - post:
-          url: "/api/posts"
-          json:
-            title: "Test Post"
-            content: "Test Content"
       - get:
           url: "/api/posts"
+          headers:
+            Authorization: "Bearer {{ token }}"
+            X-Org-Id: "{{ orgId }}"
+          qs:
+            limit: 20
+      - get:
+          url: "/api/posts"
+          headers:
+            Authorization: "Bearer {{ token }}"
+            X-Org-Id: "{{ orgId }}"
+          qs:
+            cursor: "{{ cursor }}"
+            limit: 20
 ```
 
 #### Database Load Testing
 
 ```sql
--- Test concurrent queries
+-- Test concurrent posts queries with tenant isolation
 -- Run multiple instances of this query simultaneously
 SELECT p.*, u.name as author_name, t.name as tag_name
 FROM posts p
@@ -621,6 +691,14 @@ LEFT JOIN tags t ON pt.tagId = t.id
 WHERE p.organizationId = ?
 ORDER BY p.createdAt DESC
 LIMIT 20;
+
+-- Test tag statistics calculation
+SELECT tagId, COUNT(*) as usage_count
+FROM post_tags pt
+JOIN posts p ON pt.postId = p.id
+WHERE p.organizationId = ?
+GROUP BY tagId
+ORDER BY usage_count DESC;
 ```
 
 ### Performance Benchmarks
@@ -628,16 +706,18 @@ LIMIT 20;
 #### Response Time Targets
 
 - **API Endpoints**: < 200ms for 95th percentile
-- **Database Queries**: < 100ms for 95th percentile
-- **Frontend Page Load**: < 2s for First Contentful Paint
-- **Frontend Interactions**: < 100ms for user interactions
+- **Posts List**: < 100ms for cursor-based pagination
+- **Database Queries**: < 50ms for tenant-scoped queries
+- **Admin Jobs**: < 5s for tag statistics calculation
+- **Rate Limiting**: < 10ms overhead per request
 
 #### Throughput Targets
 
 - **API Requests**: 1000 requests/second
-- **Database Connections**: 100 concurrent connections
-- **File Uploads**: 100MB/second throughput
-- **Background Jobs**: 1000 jobs/minute processing
+- **Posts List**: 500 requests/second with pagination
+- **Rate Limiting**: 30 requests/minute per user, 300/minute per org
+- **Background Jobs**: 100 tag stats jobs/minute processing
+- **Redis Operations**: 10,000 operations/second
 
 ## 🚨 Performance Troubleshooting
 
@@ -663,7 +743,7 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
 #### API Issues
 
 ```typescript
-// Debug slow endpoints
+// Debug slow endpoints with performance interceptor
 @Injectable()
 export class PerformanceInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -678,6 +758,25 @@ export class PerformanceInterceptor implements NestInterceptor {
         }
       }),
     );
+  }
+}
+
+// Monitor rate limiting issues
+@Injectable()
+export class RateLimitGuard implements CanActivate {
+  async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    const req = ctx.switchToHttp().getRequest<Request>();
+    const res = ctx.switchToHttp().getResponse();
+
+    // Log rate limit violations
+    const orgId = (req.headers['x-org-id'] as string) || 'no-org';
+    const userId = (req as any).user?.userId || 'anon';
+
+    if (!userResult.allowed) {
+      this.logger.warn(`Rate limit exceeded for user ${userId} in org ${orgId}`);
+    }
+
+    return userResult.allowed && orgResult.allowed;
   }
 }
 ```
@@ -716,11 +815,11 @@ const App = () => (
 ### API
 
 - [ ] Response DTOs limit data exposure
-- [ ] Pagination implemented for large datasets
-- [ ] Caching strategy for frequently accessed data
-- [ ] Background processing for heavy operations
-- [ ] Rate limiting implemented
-- [ ] Request/response compression enabled
+- [ ] Cursor-based pagination implemented for posts
+- [ ] Rate limiting with Redis for all endpoints
+- [ ] Idempotency caching for POST/PATCH operations
+- [ ] Background jobs for admin operations
+- [ ] Performance monitoring for slow queries
 
 ### Frontend
 
@@ -733,15 +832,15 @@ const App = () => (
 
 ### Monitoring
 
-- [ ] Performance metrics collected
-- [ ] Slow queries logged and analyzed
-- [ ] Error rates monitored
-- [ ] User experience metrics tracked
-- [ ] Alerting configured for performance issues
-- [ ] Regular performance reviews scheduled
+- [ ] Rate limiting metrics collected
+- [ ] Admin job performance tracked
+- [ ] Database query performance monitored
+- [ ] Redis operation metrics tracked
+- [ ] Error rates and slow queries logged
+- [ ] Performance reviews scheduled
 
 ---
 
 **Last Updated**: $(date)  
-**Performance Targets**: Response times < 200ms, Throughput > 1000 req/s  
-**Monitoring**: OpenTelemetry + Custom Metrics + Web Vitals
+**Performance Targets**: API < 200ms, Posts List < 100ms, Rate Limiting < 10ms  
+**Monitoring**: Redis Rate Limiting + Admin Job Metrics + Query Performance
