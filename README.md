@@ -205,7 +205,6 @@ The application uses a comprehensive PostgreSQL schema with multi-tenant archite
 
 - **[ERD Overview](docs/erd-overview.md)** - High-level system relationships
 - **[System Architecture](docs/system-architecture.md)** - Database integration patterns
-- **[Generated ERD](docs/generated-erd.mmd)** - Auto-generated from Prisma schema
 
 ### Key Schema Features
 

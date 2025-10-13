@@ -42,7 +42,6 @@
     "docker:test": "docker-compose exec api npm run test:integration",
     "docker:test:all": "docker-compose exec api npm run test:all",
     "docker:clean": "docker-compose down -v && docker system prune -f",
-    "erd:generate": "node scripts/generate-erd.js",
     "erd:studio": "npx prisma studio",
     "erd:online": "echo Visit https://prisma-erd.simonknott.de/ and paste your schema from docs/clean-schema.prisma"
   },
