@@ -41,7 +41,7 @@ test.describe('Portal Dashboard', () => {
     // Test Forms link (use more specific selector to avoid header nav)
     await helpers.page.click('main a[href="/forms"]');
     await expect(helpers.page).toHaveURL('/forms');
-    await expect(helpers.page.locator('h1')).toContainText('Portal');
+    await expect(helpers.page.locator('h1')).toContainText('Forms');
 
     // Go back to dashboard
     await helpers.navigateToPage('/');

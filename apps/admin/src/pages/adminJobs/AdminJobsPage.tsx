@@ -46,7 +46,6 @@ export default function AdminJobsPage() {
   const [runningPreview, setRunningPreview] = useState<Record<string, boolean>>({});
   const [message, setMessage] = useState<string | null>(null);
 
-  // Load tag stats
   const loadTagStats = async () => {
     try {
       setLoading(true);
@@ -70,7 +69,6 @@ export default function AdminJobsPage() {
     }
   };
 
-  // Load posts for preview jobs
   const loadPosts = async () => {
     try {
       const actualToken = token || localStorage.getItem('token') || '';
@@ -91,7 +89,6 @@ export default function AdminJobsPage() {
     }
   };
 
-  // Run tag stats job
   const runTagStats = async () => {
     try {
       setRunningTagStats(true);
@@ -125,7 +122,6 @@ export default function AdminJobsPage() {
     }
   };
 
-  // Run post preview job
   const runPreview = async (postId: string) => {
     try {
       setRunningPreview(prev => ({ ...prev, [postId]: true }));
@@ -148,7 +144,6 @@ export default function AdminJobsPage() {
 
       if (response.data.generated) {
         setMessage(`Preview generated for post ${postId.substring(0, 8)}...`);
-        // Refresh posts data to show updated status
         setTimeout(() => {
           loadPosts();
           setMessage(null);
@@ -170,7 +165,6 @@ export default function AdminJobsPage() {
     loadPosts();
   }, [token, orgId]);
 
-  // Tag stats table columns
   const tagStatsColumns: TableColumn<TagStat>[] = [
     {
       key: 'tagName',
@@ -210,7 +204,6 @@ export default function AdminJobsPage() {
     },
   ];
 
-  // Posts table columns
   const postsColumns: TableColumn<Post>[] = [
     {
       key: 'title',

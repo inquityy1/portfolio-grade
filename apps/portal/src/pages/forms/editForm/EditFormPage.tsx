@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from 'axios';
 import {
   Button,
   Input,
@@ -11,104 +10,77 @@ import {
   Alert,
   LoadingContainer,
 } from '@portfolio-grade/ui-kit';
-
-function api(path: string) {
-  // Use Docker internal API URL for e2e tests, otherwise use VITE_API_URL
-  const apiUrl =
-    import.meta.env.E2E_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
-  const B = String(apiUrl).replace(/\/$/, '');
-  return /\/api$/.test(B) ? `${B}${path}` : `${B}/api${path}`;
-}
+import { formatJsonSchema, validateFormData, fetchForm, updateForm } from './EditFormPage.utils';
+import type { FormData } from './EditFormPage.types';
 
 export default function EditFormPage() {
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
-  const [form, setForm] = useState<any | null>(null);
+  const [form, setForm] = useState<FormData | null>(null);
   const [name, setName] = useState('');
   const [schema, setSchema] = useState('');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function formatJson() {
-    try {
-      // Remove trailing commas and format JSON
-      const cleaned = schema.replace(/,(\s*[}\]])/g, '$1');
-      const parsed = JSON.parse(cleaned);
-      setSchema(JSON.stringify(parsed, null, 2));
-      setError(null);
-    } catch (e: any) {
-      setError(`Cannot format JSON: ${e.message}`);
-    }
+  function handleFormatJson() {
+    const result = formatJsonSchema(schema);
+    setSchema(result.formatted);
+    setError(result.error);
   }
-
-  const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || '';
-  const orgId = localStorage.getItem('orgId') || localStorage.getItem('orgid') || '';
 
   useEffect(() => {
     if (!id) return;
 
-    (async () => {
+    async function loadForm() {
       try {
         setLoading(true);
         setError(null);
-
-        const headers: Record<string, string> = { Accept: 'application/json' };
-        if (token) headers.Authorization = `Bearer ${token}`;
-        if (orgId) headers['x-org-id'] = orgId;
-
-        const { data } = await axios.get(api(`/forms/${id}`), { headers });
-        setForm(data);
-        setName(data.name || '');
-        setSchema(JSON.stringify(data.schema || {}, null, 2));
+        const formData = await fetchForm(id);
+        setForm(formData);
+        setName(formData.name);
+        setSchema(JSON.stringify(formData.schema, null, 2));
       } catch (e: any) {
         const s = e?.response?.status;
         if (s === 401 || s === 403) {
           nav('/login', { replace: true });
           return;
         }
+        if (s === 404) {
+          nav('/forms', { replace: true });
+          return;
+        }
         setError(e?.response?.data?.message || e.message || 'Failed to load form');
       } finally {
         setLoading(false);
       }
-    })();
-  }, [id, token, orgId, nav]);
+    }
+
+    loadForm();
+  }, [id, nav]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) {
-      setError('Form name is required');
+
+    const validation = validateFormData(name, schema);
+    if (!validation.isValid) {
+      setError(validation.error);
       return;
     }
+
+    if (!id) return;
 
     try {
       setSubmitting(true);
       setError(null);
 
-      let parsedSchema;
-      try {
-        parsedSchema = JSON.parse(schema);
-      } catch (e: any) {
-        setError(`Invalid JSON schema: ${e.message}`);
-        return;
-      }
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'Idempotency-Key': `form:update:${id}:${Date.now()}:${Math.random().toString(36).slice(2)}`,
+      const parsedSchema = JSON.parse(schema);
+      const formData = {
+        name: name.trim(),
+        schema: parsedSchema,
       };
-      if (orgId) headers['x-org-id'] = orgId;
 
-      const { data } = await axios.patch(
-        api(`/forms/${id}`),
-        {
-          name: name.trim(),
-          schema: parsedSchema,
-        },
-        { headers },
-      );
+      const data = await updateForm(id, formData);
 
       nav('/forms', {
         replace: true,
@@ -126,15 +98,27 @@ export default function EditFormPage() {
     }
   }
 
-  if (loading) return <LoadingContainer>Loading...</LoadingContainer>;
-  if (error) return <Alert variant='error'>{error}</Alert>;
-  if (!form) return <div style={{ padding: 24 }}>Form not found</div>;
+  if (loading) {
+    return (
+      <Container maxWidth='800px'>
+        <LoadingContainer>Loading form...</LoadingContainer>
+      </Container>
+    );
+  }
+
+  if (!form) {
+    return (
+      <Container maxWidth='800px'>
+        <Alert variant='error'>Form not found</Alert>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth='800px'>
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ marginBottom: 8 }}>Edit Form</h1>
-        <p style={{ opacity: 0.7, margin: 0 }}>Modify form name and schema.</p>
+        <p style={{ opacity: 0.7, margin: 0 }}>Update your form fields and validation rules.</p>
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 16 }}>
@@ -158,7 +142,11 @@ export default function EditFormPage() {
             }}
           >
             <Label>JSON Schema *</Label>
-            <Button type='button' onClick={formatJson} style={{ fontSize: 12, padding: '4px 8px' }}>
+            <Button
+              type='button'
+              onClick={handleFormatJson}
+              style={{ fontSize: 12, padding: '4px 8px' }}
+            >
               Format JSON
             </Button>
           </div>

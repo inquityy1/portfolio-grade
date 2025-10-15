@@ -3,14 +3,13 @@ import axios from 'axios';
 import { Button, Field, Label, Textarea, Input, Select } from '@portfolio-grade/ui-kit';
 import Modal from '../../components/common/Modal';
 
-// ---------- shared helpers ----------
 function apiBase() {
-  // Use Docker internal API URL for e2e tests, otherwise use VITE_API_URL
   const apiUrl =
     import.meta.env.VITE_E2E_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
   const B = String(apiUrl).replace(/\/$/, '');
   return /\/api$/.test(B) ? B : `${B}/api`;
 }
+
 function authHeaders() {
   const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || '';
   const orgId = localStorage.getItem('orgId') || localStorage.getItem('orgid') || '';
@@ -19,14 +18,15 @@ function authHeaders() {
   if (orgId) h['x-org-id'] = orgId;
   return h;
 }
+
 const idem = (pfx: string) => `${pfx}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
 
-// --- role helpers (fetch roles from /auth/me endpoint) ---
 type Membership = {
   organizationId: string;
   role: string;
   organization: { name: string };
 };
+
 type UserWithMemberships = {
   id: string;
   email: string;
@@ -53,7 +53,6 @@ function hasEditorRights(memberships: Array<{ role: string }> | undefined): bool
   const roles = new Set(memberships.map(m => m.role));
   return roles.has('Editor') || roles.has('OrgAdmin');
 }
-// ------------------------------------
 
 type Post = {
   id: string;
@@ -69,7 +68,7 @@ type Post = {
 type Comment = {
   id: string;
   content: string;
-  authorId?: string | null; // <— use this to allow owners to edit/delete
+  authorId?: string | null;
   authorName?: string | null;
   createdAt?: string | null;
 };
@@ -143,7 +142,6 @@ export default function PostsPage() {
     }
   }
 
-  // ----- Load posts -----
   async function loadPosts() {
     try {
       setError(null);
@@ -179,12 +177,10 @@ export default function PostsPage() {
     loadPosts();
   }, []);
 
-  // Reload posts when tag filter changes
   useEffect(() => {
     loadPosts();
   }, [selectedTagId]);
 
-  // ----- Fetch user (roles + id) -----
   useEffect(() => {
     if (!token) return;
 
@@ -206,7 +202,6 @@ export default function PostsPage() {
     return () => userRequestRef.current?.abort();
   }, [token]);
 
-  // ----- Comments -----
   async function toggleComments(postId: string) {
     const open = !!expanded[postId];
     if (open) return setExpanded(s => ({ ...s, [postId]: false }));
@@ -271,7 +266,6 @@ export default function PostsPage() {
     }
   }
 
-  // ----- Comment edit/delete -----
   function canModifyComment(c: Comment): boolean {
     const isOwner = !!(user?.id && c.authorId && user.id === c.authorId);
     return isOwner || hasEditorRights(user?.memberships);

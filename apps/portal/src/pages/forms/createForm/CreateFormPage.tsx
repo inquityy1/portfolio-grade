@@ -1,15 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Button, Input, Label, Field, Textarea, Container, Alert } from '@portfolio-grade/ui-kit';
-
-function api(path: string) {
-  // Use Docker internal API URL for e2e tests, otherwise use VITE_API_URL
-  const apiUrl =
-    import.meta.env.E2E_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
-  const B = String(apiUrl).replace(/\/$/, '');
-  return /\/api$/.test(B) ? `${B}${path}` : `${B}/api${path}`;
-}
+import { formatJsonSchema, validateFormData, createForm } from './CreateFormPage.utils';
 
 export default function CreateFormPage() {
   const nav = useNavigate();
@@ -20,25 +12,18 @@ export default function CreateFormPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  function formatJson() {
-    try {
-      // Remove trailing commas and format JSON
-      const cleaned = schema.replace(/,(\s*[}\]])/g, '$1');
-      const parsed = JSON.parse(cleaned);
-      setSchema(JSON.stringify(parsed, null, 2));
-      setError(null);
-    } catch (e: any) {
-      setError(`Cannot format JSON: ${e.message}`);
-    }
+  function handleFormatJson() {
+    const result = formatJsonSchema(schema);
+    setSchema(result.formatted);
+    setError(result.error);
   }
-
-  const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || '';
-  const orgId = localStorage.getItem('orgId') || localStorage.getItem('orgid') || '';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) {
-      setError('Form name is required');
+
+    const validation = validateFormData(name, schema);
+    if (!validation.isValid) {
+      setError(validation.error);
       return;
     }
 
@@ -46,30 +31,13 @@ export default function CreateFormPage() {
       setSubmitting(true);
       setError(null);
 
-      let parsedSchema;
-      try {
-        parsedSchema = JSON.parse(schema);
-      } catch (e: any) {
-        setError(`Invalid JSON schema: ${e.message}`);
-        return;
-      }
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
-        'Idempotency-Key': `form:create:${Date.now()}:${Math.random().toString(36).slice(2)}`,
+      const parsedSchema = JSON.parse(schema);
+      const formData = {
+        name: name.trim(),
+        schema: parsedSchema,
       };
-      if (orgId) headers['x-org-id'] = orgId;
 
-      const { data } = await axios.post(
-        api('/forms'),
-        {
-          name: name.trim(),
-          schema: parsedSchema,
-        },
-        { headers },
-      );
+      const data = await createForm(formData);
 
       nav('/forms', {
         replace: true,
@@ -117,7 +85,11 @@ export default function CreateFormPage() {
             }}
           >
             <Label>JSON Schema *</Label>
-            <Button type='button' onClick={formatJson} style={{ fontSize: 12, padding: '4px 8px' }}>
+            <Button
+              type='button'
+              onClick={handleFormatJson}
+              style={{ fontSize: 12, padding: '4px 8px' }}
+            >
               Format JSON
             </Button>
           </div>

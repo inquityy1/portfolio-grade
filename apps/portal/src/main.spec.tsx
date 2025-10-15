@@ -6,19 +6,19 @@ import { createAppStore } from '@portfolio-grade/app-state';
 import { UIProvider } from '@portfolio-grade/ui-kit';
 
 // Mock all page components
-jest.mock('./pages/forms/FormPage', () => {
+jest.mock('./pages/forms/form/FormPage', () => {
   return function MockFormPage() {
     return <div data-testid='form-page'>Form Page</div>;
   };
 });
 
-jest.mock('./pages/forms/CreateFormPage', () => {
+jest.mock('./pages/forms/createForm/CreateFormPage', () => {
   return function MockCreateFormPage() {
     return <div data-testid='create-form-page'>Create Form Page</div>;
   };
 });
 
-jest.mock('./pages/forms/EditFormPage', () => {
+jest.mock('./pages/forms/editForm/EditFormPage', () => {
   return function MockEditFormPage() {
     return <div data-testid='edit-form-page'>Edit Form Page</div>;
   };
@@ -48,7 +48,7 @@ jest.mock('./pages/posts/PostsPage', () => {
   };
 });
 
-jest.mock('./pages/forms/FormsListPage', () => {
+jest.mock('./pages/forms/formsList/FormsListPage', () => {
   return function MockFormsListPage() {
     return <div data-testid='forms-list-page'>Forms List Page</div>;
   };

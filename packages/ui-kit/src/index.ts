@@ -1,5 +1,6 @@
 export * from './lib/themes/Theme';
 export * from './lib/buttons/Button';
+export * from './lib/buttons/NavButton';
 export { UIProvider } from './lib/themes/Theme';
 export * from './lib/labels/Label';
 export * from './lib/inputs/Input';

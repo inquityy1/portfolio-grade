@@ -13,25 +13,27 @@ test.describe('Portal Forms List Page', () => {
   });
 
   test('should display forms list page', async () => {
-    await expect(helpers.page.locator('h1')).toContainText('Portal');
-    await expect(helpers.page.locator('p').first()).toContainText('Pick a form to preview / fill.');
+    await expect(helpers.page.locator('h1')).toContainText('Forms');
+    await expect(helpers.page.locator('p').first()).toContainText(
+      'Manage and view all available forms.',
+    );
   });
 
   test('should show create new form button for editors', async () => {
     // Check if create button is visible (depends on user role)
-    const createButton = helpers.page.locator('button:has-text("Create new form")');
+    const createButton = helpers.page.locator('button:has-text("Create New Form")');
     await expect(createButton).toBeVisible();
   });
 
   test('should display forms grid or empty state', async () => {
     // Check for either forms grid or empty state message
     const formsGrid = helpers.page.locator('[style*="grid-template-columns"]');
-    const emptyState = helpers.page.locator('text=Sorry but there is no forms right now');
+    const emptyState = helpers.page.locator('text=No forms available');
 
     // One of these should be visible, or at least the page should load
     const hasForms = await formsGrid.isVisible();
     const isEmpty = await emptyState.isVisible();
-    const pageLoaded = await helpers.page.locator('h1:has-text("Portal")').isVisible();
+    const pageLoaded = await helpers.page.locator('h1:has-text("Forms")').isVisible();
 
     expect(hasForms || isEmpty || pageLoaded).toBeTruthy();
   });

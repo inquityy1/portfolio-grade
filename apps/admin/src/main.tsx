@@ -4,8 +4,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { createAppStore } from '@portfolio-grade/app-state';
 import { UIProvider } from '@portfolio-grade/ui-kit';
-
-// pages/components
 import ProtectedRoute from './components/protectedRoute/ProtectedRoute';
 import Layout from './components/layout/Layout';
 import LoginPage from './pages/loginPage/LoginPage';

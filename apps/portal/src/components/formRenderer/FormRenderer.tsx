@@ -1,30 +1,21 @@
 import { useMemo, useState } from 'react';
 import { Button, Label, Input, Textarea, Select, Checkbox, Field } from '@portfolio-grade/ui-kit';
 import { useNavigate } from 'react-router-dom';
+import type { FormRendererProps } from './FormRenderer.types';
+import {
+  sortFieldsByOrder,
+  getFieldKey,
+  getFieldConfig,
+  getFieldPlaceholder,
+  isFieldRequired,
+  getSelectOptions,
+} from './FormRenderer.utils';
 
-type FieldModel = {
-  id: string;
-  label: string;
-  type: 'input' | 'textarea' | 'select' | 'checkbox' | string;
-  order?: number | null;
-  config?: Record<string, unknown> | null;
-};
-
-type Props = {
-  fields: FieldModel[];
-  onSubmit: (values: Record<string, unknown>) => void;
-  submitting?: boolean;
-};
-
-export default function FormRenderer({ fields, onSubmit, submitting }: Props) {
+export default function FormRenderer({ fields, onSubmit, submitting }: FormRendererProps) {
   const [values, setValues] = useState<Record<string, unknown>>({});
   const navigate = useNavigate();
 
-  const ordered = useMemo(
-    () => [...fields].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)),
-    [fields],
-  );
-  const keyFor = (f: FieldModel) => (f.config as any)?.name || f.label;
+  const ordered = useMemo(() => sortFieldsByOrder(fields), [fields]);
 
   function update(key: string, value: unknown) {
     setValues(v => ({ ...v, [key]: value }));
@@ -39,10 +30,9 @@ export default function FormRenderer({ fields, onSubmit, submitting }: Props) {
       style={{ display: 'grid', gap: 12, maxWidth: 560 }}
     >
       {ordered.map(f => {
-        const key = keyFor(f);
-        const conf = (f.config ?? {}) as any;
-        const placeholder = conf.placeholder ?? '';
-        const required = !!conf.required;
+        const key = getFieldKey(f);
+        const placeholder = getFieldPlaceholder(f);
+        const required = isFieldRequired(f);
 
         switch (String(f.type).toLowerCase()) {
           case 'textarea':
@@ -50,7 +40,7 @@ export default function FormRenderer({ fields, onSubmit, submitting }: Props) {
               <Field key={f.id}>
                 <Label>{f.label}</Label>
                 <Textarea
-                  rows={conf.rows ?? 4}
+                  rows={getFieldConfig(f).rows ?? 4}
                   placeholder={placeholder}
                   required={required}
                   value={(values[key] as string) ?? ''}
@@ -75,7 +65,7 @@ export default function FormRenderer({ fields, onSubmit, submitting }: Props) {
               </Field>
             );
           case 'select': {
-            const options: string[] = Array.isArray(conf.options) ? conf.options : [];
+            const options = getSelectOptions(f);
             return (
               <Field key={f.id}>
                 <Label>{f.label}</Label>

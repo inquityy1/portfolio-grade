@@ -1,63 +1,11 @@
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '@portfolio-grade/app-state';
 import { setToken, api, clearOrg } from '@portfolio-grade/app-state';
-import { Button } from '@portfolio-grade/ui-kit';
+import { Button, NavButton } from '@portfolio-grade/ui-kit';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-
-type Membership = {
-  organizationId: string;
-  role: string;
-  organization: { name: string };
-};
-
-type UserWithMemberships = {
-  id: string;
-  email: string;
-  memberships: Membership[];
-};
-
-async function fetchUserRoles(token: string | null): Promise<UserWithMemberships | null> {
-  if (!token) return null;
-  try {
-    const headers: Record<string, string> = { Accept: 'application/json' };
-    if (token) headers.Authorization = `Bearer ${token}`;
-
-    // Add orgId header if available
-    const orgId = typeof localStorage !== 'undefined' ? localStorage.getItem('orgId') : null;
-    if (orgId) headers['x-org-id'] = orgId;
-
-    const { data } = await axios.get(`${apiBase()}/auth/me`, { headers });
-    return data;
-  } catch (error) {
-    return null;
-  }
-}
-
-function apiBase() {
-  const B = String(import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
-  return /\/api$/.test(B) ? B : `${B}/api`;
-}
-
-function hasAdminRights(memberships: Array<{ role: string }> | undefined): boolean {
-  if (!memberships) return false;
-  const roles = new Set(memberships.map(m => m.role));
-  return roles.has('Editor') || roles.has('OrgAdmin');
-}
-
-function NavButton({ to, children }: { to: string; children: React.ReactNode }) {
-  return (
-    <NavLink
-      to={to}
-      end
-      style={{ textDecoration: 'none' }}
-      className={({ isActive }) => (isActive ? 'nav-active' : 'nav')}
-    >
-      <Button>{children}</Button>
-    </NavLink>
-  );
-}
+import type { UserWithMemberships } from './Header.types';
+import { fetchUserRoles, hasAdminRights } from './Header.utils';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -67,7 +15,6 @@ export default function Header() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Ensure token is loaded from localStorage into Redux store
     const localStorageToken =
       typeof localStorage !== 'undefined' ? localStorage.getItem('token') : null;
     if (localStorageToken && !token) {
@@ -114,12 +61,10 @@ export default function Header() {
         borderBottom: '1px solid #2e2e2e',
       }}
     >
-      {/* left: app logo / title */}
       <Link to='/' style={{ textDecoration: 'none', color: 'inherit', marginRight: 8 }}>
         <strong>Admin</strong>
       </Link>
 
-      {/* center: nav - show if user has admin rights OR if we have a token (fallback) */}
       {(!loading && canAccessAdmin) || (token && !loading) ? (
         <nav style={{ display: 'flex', gap: 8 }}>
           <NavButton to='/admin-jobs'>Admin Jobs</NavButton>
@@ -129,14 +74,12 @@ export default function Header() {
         </nav>
       ) : null}
 
-      {/* right: auth actions */}
       <div style={{ marginLeft: 'auto' }}>
         {(!loading && canAccessAdmin) || (token && !loading) ? (
           <Button onClick={logout}>Logout</Button>
         ) : null}
       </div>
 
-      {/* very small inline styles to "shine" the active link */}
       <style>
         {`
         .nav button {

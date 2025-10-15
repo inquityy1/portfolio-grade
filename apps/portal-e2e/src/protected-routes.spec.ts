@@ -27,7 +27,7 @@ test.describe('Portal Protected Routes', () => {
     // Test forms page
     await helpers.navigateToForms();
     await expect(helpers.page).toHaveURL('/forms');
-    await expect(helpers.page.locator('h1')).toContainText('Portal');
+    await expect(helpers.page.locator('h1')).toContainText('Forms');
 
     // Test posts page
     await helpers.navigateToPosts();

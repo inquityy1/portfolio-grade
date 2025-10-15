@@ -35,7 +35,7 @@ test.describe('Portal Navigation and Layout', () => {
     // Test navigation to forms
     await helpers.navigateToForms();
     await expect(helpers.page).toHaveURL('/forms');
-    await expect(helpers.page.locator('h1')).toContainText('Portal');
+    await expect(helpers.page.locator('h1')).toContainText('Forms');
 
     // Test navigation to posts
     await helpers.navigateToPosts();

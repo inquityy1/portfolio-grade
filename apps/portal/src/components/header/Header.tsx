@@ -1,59 +1,11 @@
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '@portfolio-grade/app-state';
 import { setToken, clearOrg, api } from '@portfolio-grade/app-state';
-import { Button } from '@portfolio-grade/ui-kit';
+import { Button, NavButton } from '@portfolio-grade/ui-kit';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
-
-type Membership = {
-  organizationId: string;
-  role: string;
-  organization: { name: string };
-};
-
-type UserWithMemberships = {
-  id: string;
-  email: string;
-  memberships: Membership[];
-};
-
-async function fetchUserRoles(token: string | null): Promise<UserWithMemberships | null> {
-  if (!token) return null;
-  try {
-    const headers: Record<string, string> = { Accept: 'application/json' };
-    if (token) headers.Authorization = `Bearer ${token}`;
-    const { data } = await axios.get(`${apiBase()}/auth/me`, { headers });
-    return data;
-  } catch {
-    return null;
-  }
-}
-
-function apiBase() {
-  const B = String(import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '');
-  return /\/api$/.test(B) ? B : `${B}/api`;
-}
-
-function hasAdminRights(memberships: Array<{ role: string }> | undefined): boolean {
-  if (!memberships) return false;
-  const roles = new Set(memberships.map(m => m.role));
-  return roles.has('Editor') || roles.has('OrgAdmin');
-}
-
-function NavButton({ to, children }: { to: string; children: React.ReactNode }) {
-  return (
-    <NavLink
-      to={to}
-      end
-      style={{ textDecoration: 'none' }}
-      className={({ isActive }) => (isActive ? 'nav-active' : 'nav')}
-    >
-      {/* If your UI kit has variants, you can switch variant based on active */}
-      <Button>{children}</Button>
-    </NavLink>
-  );
-}
+import type { UserWithMemberships } from './Header.types';
+import { fetchUserRoles, hasAdminRights } from './Header.utils';
 
 export default function Header() {
   const navigate = useNavigate();

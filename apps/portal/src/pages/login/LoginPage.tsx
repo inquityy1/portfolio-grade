@@ -1,18 +1,10 @@
 import { useState } from 'react';
-import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useLoginMutation, setToken, setOrg } from '@portfolio-grade/app-state';
 import type { RootState } from '@portfolio-grade/app-state';
-import { Button, Label, Input, Field, Container, Alert } from '@portfolio-grade/ui-kit';
-
-function api(path: string) {
-  // Use Docker internal API URL for e2e tests, otherwise use VITE_API_URL
-  const apiUrl =
-    import.meta.env.VITE_E2E_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
-  const B = String(apiUrl).replace(/\/$/, '');
-  return /\/api$/.test(B) ? `${B}${path}` : `${B}/api${path}`;
-}
+import { Button, Label, Input, Field, Container } from '@portfolio-grade/ui-kit';
+import { fetchUserProfile, extractOrganizationId, persistAuthData } from './LoginPage.utils';
 
 export default function LoginPage() {
   const dispatch = useDispatch();
@@ -28,32 +20,20 @@ export default function LoginPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      // 1) get JWT
+      // 1) Get JWT token
       const { access_token } = await login({ email, password }).unwrap();
 
-      // persist token everywhere your app expects it
+      // Persist token everywhere your app expects it
       dispatch(setToken(access_token));
-      localStorage.setItem('token', access_token);
+      persistAuthData(access_token);
 
-      // 2) resolve orgId (from login response if enriched; else via /auth/me)
-      let orgId: string | undefined;
-
-      // Try /auth/me (no x-org-id needed)
-      const me = await axios
-        .get(api('/auth/me'), {
-          headers: { Accept: 'application/json', Authorization: `Bearer ${access_token}` },
-        })
-        .then(r => r.data)
-        .catch(() => null);
-
-      const first = me?.memberships?.[0];
-      if (first?.organizationId) {
-        orgId = String(first.organizationId);
-      }
+      // 2) Resolve orgId from user profile
+      const userProfile = await fetchUserProfile(access_token);
+      const orgId = extractOrganizationId(userProfile);
 
       if (orgId) {
         dispatch(setOrg(orgId));
-        localStorage.setItem('orgId', orgId);
+        persistAuthData(access_token, orgId);
       }
 
       navigate('/', { replace: true });
