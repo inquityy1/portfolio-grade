@@ -1,82 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import axios from 'axios';
 import { Button, Field, Label, Textarea, Input, Select } from '@portfolio-grade/ui-kit';
 import Modal from '../../components/common/Modal';
-
-function apiBase() {
-  const apiUrl =
-    import.meta.env.VITE_E2E_API_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
-  const B = String(apiUrl).replace(/\/$/, '');
-  return /\/api$/.test(B) ? B : `${B}/api`;
-}
-
-function authHeaders() {
-  const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || '';
-  const orgId = localStorage.getItem('orgId') || localStorage.getItem('orgid') || '';
-  const h: Record<string, string> = { Accept: 'application/json' };
-  if (token) h.Authorization = `Bearer ${token}`;
-  if (orgId) h['x-org-id'] = orgId;
-  return h;
-}
-
-const idem = (pfx: string) => `${pfx}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
-
-type Membership = {
-  organizationId: string;
-  role: string;
-  organization: { name: string };
-};
-
-type UserWithMemberships = {
-  id: string;
-  email: string;
-  memberships: Membership[];
-};
-
-async function fetchUserRoles(
-  token: string | null,
-  signal?: AbortSignal,
-): Promise<UserWithMemberships | null> {
-  if (!token) return null;
-  try {
-    const headers: Record<string, string> = { Accept: 'application/json' };
-    if (token) headers.Authorization = `Bearer ${token}`;
-    const { data } = await axios.get(`${apiBase()}/auth/me`, { headers, signal });
-    return data;
-  } catch {
-    return null;
-  }
-}
-
-function hasEditorRights(memberships: Array<{ role: string }> | undefined): boolean {
-  if (!memberships) return false;
-  const roles = new Set(memberships.map(m => m.role));
-  return roles.has('Editor') || roles.has('OrgAdmin');
-}
-
-type Post = {
-  id: string;
-  title?: string | null;
-  content?: string | null;
-  authorName?: string | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
-  version?: number;
-  tags?: { id: string; name: string }[];
-};
-
-type Comment = {
-  id: string;
-  content: string;
-  authorId?: string | null;
-  authorName?: string | null;
-  createdAt?: string | null;
-};
-
-type Tag = {
-  id: string;
-  name: string;
-};
+import type { UserWithMemberships, Post, Comment, Tag } from './PostsPage.types';
+import {
+  generateIdempotencyKey,
+  getAuthTokens,
+  createAuthHeaders,
+  fetchUserRoles,
+  hasEditorRights,
+  loadTags,
+  loadPosts,
+  loadComments,
+  addComment,
+  updateComment,
+  deleteComment,
+  restoreComment,
+  deletePost,
+  createPost,
+  updatePost,
+} from './PostsPage.utils';
 
 export default function PostsPage() {
   const token = localStorage.getItem('token') || localStorage.getItem('accessToken') || null;
@@ -127,58 +69,35 @@ export default function PostsPage() {
   const userRequestRef = useRef<AbortController | null>(null);
 
   // ----- Load tags -----
-  async function loadTags() {
+  async function loadTagsHandler() {
     try {
-      const { data } = await axios.get(`${apiBase()}/tags`, { headers: authHeaders() });
-      const arr = Array.isArray(data) ? data : [];
-      const mapped: Tag[] = arr.map((t: any) => ({
-        id: String(t.id),
-        name: String(t.name),
-      }));
-      setTags(mapped);
+      const tagsData = await loadTags();
+      setTags(tagsData);
     } catch (e: any) {
       console.error('Failed to load tags:', e);
       setTags([]);
     }
   }
 
-  async function loadPosts() {
+  async function loadPostsHandler() {
     try {
       setError(null);
       setPosts(null);
-      const url = selectedTagId
-        ? `${apiBase()}/posts?tagId=${selectedTagId}`
-        : `${apiBase()}/posts`;
-      const { data } = await axios.get(url, { headers: authHeaders() });
-      const arr = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
-      const mapped: Post[] = arr.map((p: any) => ({
-        id: String(p.id),
-        title: p.title ?? null,
-        content: p.content ?? null,
-        authorName: p.author?.name ?? null,
-        createdAt: p.createdAt ?? null,
-        updatedAt: p.updatedAt ?? null,
-        version: p.version ?? 1,
-        tags: Array.isArray(p.tags)
-          ? p.tags.map((t: any) => ({
-              id: String(t.id ?? t.tagId ?? t.name),
-              name: String(t.name ?? t.tag?.name ?? ''),
-            }))
-          : [],
-      }));
-      setPosts(mapped);
+      const { posts, error } = await loadPosts(selectedTagId);
+      setPosts(posts);
+      setError(error);
     } catch (e: any) {
       setPosts([]);
       setError(e?.response?.data?.message || e.message || 'Failed to load posts');
     }
   }
   useEffect(() => {
-    loadTags();
-    loadPosts();
+    loadTagsHandler();
+    loadPostsHandler();
   }, []);
 
   useEffect(() => {
-    loadPosts();
+    loadPostsHandler();
   }, [selectedTagId]);
 
   useEffect(() => {
@@ -210,54 +129,22 @@ export default function PostsPage() {
     if (comments[postId] !== undefined) return;
 
     try {
-      const { data } = await axios.get(`${apiBase()}/posts/${postId}/comments`, {
-        headers: authHeaders(),
-      });
-      const arr: Comment[] = (
-        Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : []
-      ).map((c: any) => ({
-        id: String(c.id),
-        content: String(c.content ?? ''),
-        authorId: c.authorId ?? c.author?.id ?? null, // <— use if backend returns it
-        authorName: c.author?.name ?? null,
-        createdAt: c.createdAt ?? null,
-      }));
+      const arr = await loadComments(postId);
       setComments(s => ({ ...s, [postId]: arr }));
     } catch {
       setComments(s => ({ ...s, [postId]: [] }));
     }
   }
 
-  async function addComment(postId: string, value: string) {
+  async function addCommentHandler(postId: string, value: string) {
     if (!value.trim()) return;
     try {
       setAdding(s => ({ ...s, [postId]: true }));
-      await axios.post(
-        `${apiBase()}/posts/${postId}/comments`,
-        { content: value },
-        {
-          headers: {
-            ...authHeaders(),
-            'Content-Type': 'application/json',
-            'Idempotency-Key': idem(`comment:create:${postId}`),
-          },
-        },
-      );
+      await addComment(postId, value);
       // Refresh comments list to get real ids/ownership
       await toggleComments(postId); // ensures expanded true
       // force reload of that thread
-      const { data } = await axios.get(`${apiBase()}/posts/${postId}/comments`, {
-        headers: authHeaders(),
-      });
-      const arr: Comment[] = (
-        Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : []
-      ).map((c: any) => ({
-        id: String(c.id),
-        content: String(c.content ?? ''),
-        authorId: c.authorId ?? c.author?.id ?? null,
-        authorName: c.author?.name ?? null,
-        createdAt: c.createdAt ?? null,
-      }));
+      const arr = await loadComments(postId);
       setComments(s => ({ ...s, [postId]: arr }));
       const ref = inputsRef.current[postId];
       if (ref) ref.value = '';
@@ -290,17 +177,7 @@ export default function PostsPage() {
     if (!newVal) return;
     try {
       setSavingComment(s => ({ ...s, [c.id]: true }));
-      await axios.patch(
-        `${apiBase()}/comments/${c.id}`,
-        { content: newVal },
-        {
-          headers: {
-            ...authHeaders(),
-            'Content-Type': 'application/json',
-            'Idempotency-Key': idem(`comment:update:${c.id}`),
-          },
-        },
-      );
+      await updateComment(c.id, newVal);
       // update UI
       setComments(s => ({
         ...s,
@@ -315,14 +192,12 @@ export default function PostsPage() {
     }
   }
 
-  async function deleteComment(postId: string, c: Comment) {
+  async function deleteCommentHandler(postId: string, c: Comment) {
     if (!canModifyComment(c)) return;
     if (!confirm('Delete this comment?')) return;
     try {
       setDeletingComment(s => ({ ...s, [c.id]: true }));
-      await axios.delete(`${apiBase()}/comments/${c.id}`, {
-        headers: { ...authHeaders(), 'Idempotency-Key': idem(`comment:delete:${c.id}`) },
-      });
+      await deleteComment(c.id);
       setComments(s => ({
         ...s,
         [postId]: (s[postId] ?? []).filter(x => x.id !== c.id),
@@ -347,17 +222,7 @@ export default function PostsPage() {
 
     try {
       setRestoring(true);
-      const { data } = await axios.post(
-        `${apiBase()}/comments/${restoreCommentId.trim()}/restore`,
-        {},
-        {
-          headers: {
-            ...authHeaders(),
-            'Content-Type': 'application/json',
-            'Idempotency-Key': idem(`comment:restore:${restoreCommentId}`),
-          },
-        },
-      );
+      const data = await restoreComment(restoreCommentId.trim());
 
       // Refresh comments for the specific post
       if (data.postId) {
@@ -379,18 +244,7 @@ export default function PostsPage() {
   // Helper function to refresh comments for a specific post
   async function refreshCommentsForPost(postId: string) {
     try {
-      const { data } = await axios.get(`${apiBase()}/posts/${postId}/comments`, {
-        headers: authHeaders(),
-      });
-      const arr: Comment[] = (
-        Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : []
-      ).map((c: any) => ({
-        id: String(c.id),
-        content: String(c.content ?? ''),
-        authorId: c.authorId ?? c.author?.id ?? null,
-        authorName: c.author?.name ?? null,
-        createdAt: c.createdAt ?? null,
-      }));
+      const arr = await loadComments(postId);
       setComments(s => ({ ...s, [postId]: arr }));
     } catch (err) {
       console.error('Failed to refresh comments:', err);
@@ -402,10 +256,8 @@ export default function PostsPage() {
     if (!confirm('Delete this post?')) return;
     try {
       setBusyId(postId);
-      await axios.delete(`${apiBase()}/posts/${postId}`, {
-        headers: { ...authHeaders(), 'Idempotency-Key': idem(`post:delete:${postId}`) },
-      });
-      await loadPosts();
+      await deletePost(postId);
+      await loadPostsHandler();
     } finally {
       setBusyId(null);
     }
@@ -429,19 +281,9 @@ export default function PostsPage() {
     e.preventDefault();
     try {
       setSaving(true);
-      await axios.post(
-        `${apiBase()}/posts`,
-        { title, content, tagIds: selectedTagIds },
-        {
-          headers: {
-            ...authHeaders(),
-            'Content-Type': 'application/json',
-            'Idempotency-Key': idem('post:create'),
-          },
-        },
-      );
+      await createPost(title, content, selectedTagIds);
       setCreateOpen(false);
-      await loadPosts();
+      await loadPostsHandler();
     } catch (err) {
       alert('Failed to create post');
       console.error(err);
@@ -454,20 +296,10 @@ export default function PostsPage() {
     if (!editing) return;
     try {
       setSaving(true);
-      await axios.patch(
-        `${apiBase()}/posts/${editing.id}`,
-        { title, content, version: editing.version || 1 },
-        {
-          headers: {
-            ...authHeaders(),
-            'Content-Type': 'application/json',
-            'Idempotency-Key': idem(`post:update:${editing.id}`),
-          },
-        },
-      );
+      await updatePost(editing.id, title, content, editing.version || 1);
       setEditOpen(false);
       setEditing(null);
-      await loadPosts();
+      await loadPostsHandler();
     } catch (err) {
       alert('Failed to save post');
       console.error(err);
@@ -589,7 +421,7 @@ export default function PostsPage() {
                   </Field>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <Button
-                      onClick={() => addComment(p.id, inputsRef.current[p.id]?.value || '')}
+                      onClick={() => addCommentHandler(p.id, inputsRef.current[p.id]?.value || '')}
                       disabled={!!adding[p.id]}
                     >
                       {adding[p.id] ? 'Posting…' : 'Post'}
@@ -625,7 +457,7 @@ export default function PostsPage() {
                               <div style={{ display: 'flex', gap: 8 }}>
                                 <Button onClick={() => startEditComment(p.id, c)}>Edit</Button>
                                 <Button
-                                  onClick={() => deleteComment(p.id, c)}
+                                  onClick={() => deleteCommentHandler(p.id, c)}
                                   disabled={!!deletingComment[c.id]}
                                 >
                                   {deletingComment[c.id] ? 'Deleting…' : 'Delete'}
